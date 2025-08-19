@@ -2,13 +2,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, RedirectResponse
 from typing import List
-from models import TodoItem, CreateTodoCommand, UpdateTodoCommand
+from models import JobApplication, CreateJobApplicationCommand, UpdateJobApplicationCommand
 from database import db
 
-app = FastAPI(title="Todos API", version="v1", docs_url="/swagger", redoc_url="/redoc")
-app.title = "Todos API"
+app = FastAPI(title="Job Tracker API", version="v1", docs_url="/swagger", redoc_url="/redoc")
+app.title = "Job Tracker API"
 app.version = "v1"
-app.description = "Todos API"
+app.description = "Job Application Tracker API"
 
 # Configure CORS to allow all origins
 app.add_middleware(
@@ -24,31 +24,38 @@ app.add_middleware(
 async def redirect_to_swagger():
     return RedirectResponse(url="/swagger")
 
-@app.get("/api/Todos", response_model=List[TodoItem], tags=["Todos"], operation_id="GetTodos")
-async def get_todos():
-    return db.get_all_todos()
+@app.get("/api/JobApplications", response_model=List[JobApplication], tags=["JobApplications"], operation_id="GetJobApplications")
+async def get_job_applications():
+    return db.get_all_job_applications()
 
 
-@app.post("/api/Todos", response_model=int, tags=["Todos"], operation_id="CreateTodo")
-async def create_todo(command: CreateTodoCommand):
-    todo_id = db.create_todo(command.title)
-    return todo_id
+@app.get("/api/JobApplications/{id}", response_model=JobApplication, tags=["JobApplications"], operation_id="GetJobApplication")
+async def get_job_application(id: int):
+    job_app = db.get_job_application_by_id(id)
+    if not job_app:
+        raise HTTPException(status_code=404, detail="Job application not found")
+    return job_app
 
 
-@app.put("/api/Todos/{id}", tags=["Todos"], operation_id="UpdateTodo")
-async def update_todo(id: int, command: UpdateTodoCommand):
-    # Use the ID from the path, not from the command body
-    success = db.update_todo(id, command.title, command.isComplete)
+@app.post("/api/JobApplications", response_model=int, tags=["JobApplications"], operation_id="CreateJobApplication")
+async def create_job_application(command: CreateJobApplicationCommand):
+    job_app_id = db.create_job_application(command)
+    return job_app_id
+
+
+@app.put("/api/JobApplications/{id}", tags=["JobApplications"], operation_id="UpdateJobApplication")
+async def update_job_application(id: int, command: UpdateJobApplicationCommand):
+    success = db.update_job_application(id, command)
     if not success:
-        raise HTTPException(status_code=404, detail="Todo not found")
+        raise HTTPException(status_code=404, detail="Job application not found")
     
     return Response(status_code=200)
 
 
-@app.delete("/api/Todos/{id}", tags=["Todos"], operation_id="DeleteTodo")
-async def delete_todo(id: int):
-    success = db.delete_todo(id)
+@app.delete("/api/JobApplications/{id}", tags=["JobApplications"], operation_id="DeleteJobApplication")
+async def delete_job_application(id: int):
+    success = db.delete_job_application(id)
     if not success:
-        raise HTTPException(status_code=404, detail="Todo not found")
+        raise HTTPException(status_code=404, detail="Job application not found")
     
     return Response(status_code=200)
