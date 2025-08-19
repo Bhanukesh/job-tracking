@@ -1,71 +1,33 @@
-'use client'
-
-import { useState } from "react";
-import { useGetTodosQuery, useCreateTodoMutation, useUpdateTodoMutation, useDeleteTodoMutation } from "@/store/api/enhanced/todos";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-
-export default function TodosPage() {
-    const { data: todos, isLoading, isError } = useGetTodosQuery();
-    const [createTodo] = useCreateTodoMutation();
-    const [updateTodo] = useUpdateTodoMutation();
-    const [deleteTodo] = useDeleteTodoMutation();
-    const [newTodoTitle, setNewTodoTitle] = useState("");
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
-
-    if (isError || !todos) {
-        return <div>Error loading todos.</div>;
-    }
-
-    const handleCreateTodo = () => {
-        if (newTodoTitle.trim()) {
-            createTodo({ createTodoCommand: { title: newTodoTitle } });
-            setNewTodoTitle("");
-        }
-    };
-
+export default function DashboardPage() {
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Todos</h1>
-            <div className="flex w-full max-w-sm items-center space-x-2 mb-4">
-                <Input
-                    type="text"
-                    placeholder="Add a new todo"
-                    value={newTodoTitle}
-                    onChange={(e) => setNewTodoTitle(e.target.value)}
-                />
-                <Button onClick={handleCreateTodo}>Add Todo</Button>
+        <div>
+            <h1 className="text-3xl font-bold mb-6">Job Application Dashboard</h1>
+            
+            {/* Dashboard stats will go here */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold text-gray-600">Total Applications</h3>
+                    <p className="text-3xl font-bold text-blue-600">0</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold text-gray-600">Active</h3>
+                    <p className="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold text-gray-600">Pending</h3>
+                    <p className="text-3xl font-bold text-yellow-600">0</p>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow">
+                    <h3 className="text-lg font-semibold text-gray-600">Rejected</h3>
+                    <p className="text-3xl font-bold text-red-600">0</p>
+                </div>
             </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[50px]">Complete</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead className="w-[100px]">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {todos.map((todo) => (
-                        <TableRow key={todo.id}>
-                            <TableCell>
-                                <Checkbox
-                                    checked={todo.isComplete!}
-                                    onCheckedChange={() => updateTodo({ id: todo.id!, updateTodoCommand: { id: todo.id!, title: todo.title ?? "", isComplete: !todo.isComplete } })}
-                                />
-                            </TableCell>
-                            <TableCell>{todo.title}</TableCell>
-                            <TableCell>
-                                <Button variant="destructive" onClick={() => deleteTodo({ id: todo.id! })}>Delete</Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+
+            {/* Recent Activity section */}
+            <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+                <p className="text-gray-500">No recent applications found.</p>
+            </div>
         </div>
     );
 }
