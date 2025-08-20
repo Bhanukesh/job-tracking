@@ -1,12 +1,13 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Edit, Trash2, Plus } from "lucide-react"
+import { Search, Edit, Trash2, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { EditJobModal } from "@/components/edit-job-modal"
 import { AddJobModal } from "@/components/add-job-modal"
@@ -24,6 +25,9 @@ interface JobApplication {
 }
 
 export default function ApplicationsPage() {
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 20
+
     const applications: JobApplication[] = [
         {
             id: "1",
@@ -79,8 +83,67 @@ export default function ApplicationsPage() {
             dateApplied: "1/4/2024",
             description: "Backend Developer position working with Node.js...",
             jobUrl: "https://devco.com/careers/backend"
-        }
+        },
+        // Adding more sample data for pagination testing
+        ...Array.from({ length: 45 }, (_, i) => ({
+            id: (i + 6).toString(),
+            jobTitle: `Job Title ${i + 6}`,
+            company: `Company ${i + 6}`,
+            location: `City ${i + 6}, State`,
+            salary: `$${80 + (i * 5)},000 - $${120 + (i * 5)},000`,
+            status: (['Applied', 'Interview', 'Offer', 'Rejected'] as const)[i % 4],
+            dateApplied: `${Math.floor(Math.random() * 12) + 1}/${Math.floor(Math.random() * 28) + 1}/2024`,
+            description: `Description for job ${i + 6}...`,
+            jobUrl: `https://company${i + 6}.com/jobs`
+        }))
     ]
+
+    const totalPages = Math.ceil(applications.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const currentApplications = applications.slice(startIndex, endIndex)
+
+    const goToPage = (page: number) => {
+        setCurrentPage(page)
+    }
+
+    const goToPrevious = () => {
+        setCurrentPage(prev => Math.max(prev - 1, 1))
+    }
+
+    const goToNext = () => {
+        setCurrentPage(prev => Math.min(prev + 1, totalPages))
+    }
+
+    const getPageNumbers = () => {
+        const pages = []
+        const showPages = 5
+        
+        if (totalPages <= showPages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i)
+            }
+        } else {
+            const start = Math.max(1, currentPage - Math.floor(showPages / 2))
+            const end = Math.min(totalPages, start + showPages - 1)
+            
+            if (start > 1) {
+                pages.push(1)
+                if (start > 2) pages.push('...')
+            }
+            
+            for (let i = start; i <= end; i++) {
+                pages.push(i)
+            }
+            
+            if (end < totalPages) {
+                if (end < totalPages - 1) pages.push('...')
+                pages.push(totalPages)
+            }
+        }
+        
+        return pages
+    }
 
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
@@ -143,7 +206,7 @@ export default function ApplicationsPage() {
                     {/* Mobile Card View */}
                     <div className="block xl:hidden">
                         <div className="space-y-4 p-4 sm:p-6">
-                            {applications.map((app) => (
+                            {currentApplications.map((app) => (
                                 <Card key={app.id} className="p-4 border border-border hover:shadow-md transition-shadow">
                                     <div className="space-y-4">
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
@@ -158,7 +221,6 @@ export default function ApplicationsPage() {
                                                 <p className="text-sm text-muted-foreground">{app.location}</p>
                                             </div>
                                             <Badge 
-                                                variant="secondary"
                                                 className={`${getStatusBadgeColor(app.status)} flex-shrink-0 text-sm px-3 py-1`}
                                             >
                                                 {app.status}
@@ -212,7 +274,7 @@ export default function ApplicationsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {applications.map((app) => (
+                                {currentApplications.map((app) => (
                                     <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                                         <TableCell className="px-4 py-4">
                                             <Link 
@@ -227,7 +289,6 @@ export default function ApplicationsPage() {
                                         <TableCell className="px-4 py-4 text-foreground font-medium">{app.salary}</TableCell>
                                         <TableCell className="px-4 py-4">
                                             <Badge 
-                                                variant="secondary"
                                                 className={getStatusBadgeColor(app.status)}
                                             >
                                                 {app.status}
@@ -260,30 +321,54 @@ export default function ApplicationsPage() {
             {/* Pagination */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-4">
                 <p className="text-sm text-gray-600 text-center sm:text-left">
-                    Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
-                    <span className="font-medium">24</span> results
+                    Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                    <span className="font-medium">{Math.min(endIndex, applications.length)}</span> of{' '}
+                    <span className="font-medium">{applications.length}</span> results
                 </p>
-                <div className="flex items-center justify-center space-x-2">
-                    <Button variant="outline" size="sm" disabled className="px-3 py-2 text-sm">
+                <div className="flex items-center justify-center space-x-1">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={goToPrevious}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-sm flex items-center gap-1"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
                         Previous
                     </Button>
+                    
                     <div className="flex space-x-1">
-                        <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 px-3 py-2 text-sm">
-                            1
-                        </Button>
-                        <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
-                            2
-                        </Button>
-                        <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
-                            3
-                        </Button>
-                        <span className="px-2 py-2 text-sm text-gray-500">...</span>
-                        <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
-                            10
-                        </Button>
+                        {getPageNumbers().map((page, index) => (
+                            <span key={index}>
+                                {page === '...' ? (
+                                    <span className="px-2 py-2 text-sm text-gray-500">...</span>
+                                ) : (
+                                    <Button 
+                                        variant={currentPage === page ? "default" : "outline"}
+                                        size="sm" 
+                                        onClick={() => goToPage(page as number)}
+                                        className={`px-3 py-2 text-sm ${
+                                            currentPage === page 
+                                                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                                : ''
+                                        }`}
+                                    >
+                                        {page}
+                                    </Button>
+                                )}
+                            </span>
+                        ))}
                     </div>
-                    <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
+                    
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={goToNext}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-2 text-sm flex items-center gap-1"
+                    >
                         Next
+                        <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
             </div>
