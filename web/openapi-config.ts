@@ -8,6 +8,9 @@ const config: ConfigFile = {
     './src/store/api/generated/jobApplications.ts': {
       filterEndpoints: [/JobApplication/]
     },
+    './src/store/api/generated/jobApplications.ts': {
+      filterEndpoints: [/JobApplication/]
+    },
   },
   exportName: 'jobApplicationsApi',
   hooks: true,

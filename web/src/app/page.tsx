@@ -4,96 +4,64 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Users, MessageSquare, XCircle, Handshake } from "lucide-react"
+import { FileText, Users, MessageSquare, XCircle, Handshake, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { AddJobModal } from "@/components/add-job-modal"
+import { useGetJobApplicationsQuery } from "@/store/api/generated/jobApplications"
+import { useMemo } from "react"
+import { safeSortArray } from "@/lib/utils"
 
 export default function DashboardPage() {
     const router = useRouter()
+    const { data: applications = [], isLoading, error } = useGetJobApplicationsQuery()
     
-    const stats = [
-  {
-    title: "Total Applications",
-    value: "24",
-    icon: FileText,
-    iconColor: "text-blue-500",
-    bgColor: "bg-blue-50 dark:bg-blue-900/30"
-  },
-  {
-    title: "Offers",
-    value: "8",
-    icon: Handshake,
-    iconColor: "text-purple-500",
-    bgColor: "bg-purple-50 dark:bg-purple-900/30"
-  },
-  {
-    title: "Interviews",
-    value: "5",
-    icon: Users,
-    iconColor: "text-green-500",
-    bgColor: "bg-green-50 dark:bg-green-900/30"
-  },
-  {
-    title: "Rejected",
-    value: "11",
-    icon: XCircle,
-    iconColor: "text-red-500",
-    bgColor: "bg-red-50 dark:bg-red-900/30"
-  }
-]
+    // Calculate stats from real data
+    const stats = useMemo(() => {
+        const total = applications.length
+        const statusCounts = applications.reduce((acc, app) => {
+            acc[app.status] = (acc[app.status] || 0) + 1
+            return acc
+        }, {} as Record<string, number>)
 
+        return [
+            {
+                title: "Total Applications",
+                value: total.toString(),
+                icon: FileText,
+                iconColor: "text-blue-500",
+                bgColor: "bg-blue-50 dark:bg-blue-900/30"
+            },
+            {
+                title: "Offers",
+                value: (statusCounts.Offer || 0).toString(),
+                icon: Handshake,
+                iconColor: "text-purple-500",
+                bgColor: "bg-purple-50 dark:bg-purple-900/30"
+            },
+            {
+                title: "Interviews",
+                value: (statusCounts.Interview || 0).toString(),
+                icon: Users,
+                iconColor: "text-green-500",
+                bgColor: "bg-green-50 dark:bg-green-900/30"
+            },
+            {
+                title: "Rejected",
+                value: (statusCounts.Rejected || 0).toString(),
+                icon: XCircle,
+                iconColor: "text-red-500",
+                bgColor: "bg-red-50 dark:bg-red-900/30"
+            }
+        ]
+    }, [applications])
 
-    interface JobApplication {
-        id: string;
-        jobTitle: string;
-        company: string;
-        location: string;
-        status: 'Applied' | 'Interview' | 'Offer' | 'Rejected';
-        dateApplied: string;
-    }
-
-    const recentApplications: JobApplication[] = [
-        {
-            id: "1",
-            jobTitle: "Senior Frontend Developer",
-            company: "Google",
-            location: "Mountain View, CA",
-            status: "Interview",
-            dateApplied: "2025-08-15"
-        },
-        {
-            id: "2",
-            jobTitle: "Full Stack Engineer",
-            company: "Microsoft",
-            location: "Seattle, WA",
-            status: "Applied",
-            dateApplied: "2025-08-12"
-        },
-        {
-            id: "3",
-            jobTitle: "React Developer",
-            company: "Meta",
-            location: "Menlo Park, CA",
-            status: "Offer",
-            dateApplied: "2025-08-10"
-        },
-        {
-            id: "4",
-            jobTitle: "Software Engineer",
-            company: "Apple",
-            location: "Cupertino, CA",
-            status: "Rejected",
-            dateApplied: "2025-08-08"
-        },
-        {
-            id: "5",
-            jobTitle: "Frontend Engineer",
-            company: "Netflix",
-            location: "Los Gatos, CA",
-            status: "Applied",
-            dateApplied: "2025-08-05"
-        }
-    ]
+    // Get recent applications (last 5)
+    // Note: RTK Query returns immutable arrays, so we use safeSortArray to create a copy before sorting
+    const recentApplications = useMemo(() => {
+        return safeSortArray(applications, (a, b) => 
+            new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime()
+        ).slice(0, 5)
+    }, [applications])
 
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
@@ -108,6 +76,18 @@ export default function DashboardPage() {
             default:
                 return 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 hover:bg-gray-100'
         }
+    }
+
+    if (error) {
+        return (
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <XCircle className="h-12 w-12 text-red-500 mb-4" />
+                    <h2 className="text-xl font-semibold mb-2">Failed to load dashboard</h2>
+                    <p className="text-muted-foreground">Please try refreshing the page</p>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -131,7 +111,13 @@ export default function DashboardPage() {
                                 <p className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide truncate">
                                     {stat.title}
                                 </p>
-                                <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2 text-foreground">{stat.value}</p>
+                                {isLoading ? (
+                                    <div className="flex items-center mt-1 sm:mt-2">
+                                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                    </div>
+                                ) : (
+                                    <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2 text-foreground">{stat.value}</p>
+                                )}
                             </div>
                             <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg ${stat.bgColor} flex items-center justify-center flex-shrink-0 ml-3`}>
                                 <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.iconColor}`} />
@@ -158,9 +144,27 @@ export default function DashboardPage() {
                                         <p className="text-sm">Get started by adding your first job application</p>
                                     </div>
                                 </div>
-                            ) : (
-                                recentApplications.map((app, index: number) => (
+                            ) : isLoading ? (
+                                Array.from({ length: 3 }).map((_, index) => (
                                     <Card key={index} className="p-4 border border-border">
+                                        <div className="space-y-3 animate-pulse">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1 min-w-0 space-y-2">
+                                                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                                                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                                                </div>
+                                                <div className="h-6 bg-muted rounded w-16 ml-2"></div>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="h-3 bg-muted rounded w-1/3"></div>
+                                                <div className="h-3 bg-muted rounded w-20"></div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))
+                            ) : (
+                                recentApplications.map((app) => (
+                                    <Card key={app.id} className="p-4 border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => router.push(`/applications/${app.id}`)}>
                                         <div className="space-y-3">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1 min-w-0">
@@ -175,8 +179,8 @@ export default function DashboardPage() {
                                                 </Badge>
                                             </div>
                                             <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                                <span className="truncate">{app.location}</span>
-                                                <span className="flex-shrink-0 ml-2">{app.dateApplied}</span>
+                                                <span className="truncate">{app.location || 'Location not specified'}</span>
+                                                <span className="flex-shrink-0 ml-2">{new Date(app.dateApplied).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </Card>
@@ -198,7 +202,7 @@ export default function DashboardPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {recentApplications.length === 0 ? (
+                                {recentApplications.length === 0 && !isLoading ? (
                                     <TableRow>
                                         <TableCell colSpan={5} className="px-6 py-16 text-center">
                                             <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground">
@@ -208,12 +212,32 @@ export default function DashboardPage() {
                                             </div>
                                         </TableCell>
                                     </TableRow>
+                                ) : isLoading ? (
+                                    Array.from({ length: 3 }).map((_, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="h-4 bg-muted rounded w-3/4 animate-pulse"></div>
+                                            </TableCell>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="h-4 bg-muted rounded w-1/2 animate-pulse"></div>
+                                            </TableCell>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="h-4 bg-muted rounded w-2/3 animate-pulse"></div>
+                                            </TableCell>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="h-6 bg-muted rounded w-16 animate-pulse"></div>
+                                            </TableCell>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="h-4 bg-muted rounded w-20 animate-pulse"></div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
                                 ) : (
                                     recentApplications.map((app) => (
                                         <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/applications/${app.id}`)}>
                                             <TableCell className="px-6 py-4 font-medium">{app.jobTitle}</TableCell>
                                             <TableCell className="px-6 py-4">{app.company}</TableCell>
-                                            <TableCell className="px-6 py-4">{app.location}</TableCell>
+                                            <TableCell className="px-6 py-4">{app.location || 'Location not specified'}</TableCell>
                                             <TableCell className="px-6 py-4">
                                                 <Badge 
                                                     variant="secondary"
@@ -222,7 +246,7 @@ export default function DashboardPage() {
                                                     {app.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="px-6 py-4 text-muted-foreground">{app.dateApplied}</TableCell>
+                                            <TableCell className="px-6 py-4 text-muted-foreground">{new Date(app.dateApplied).toLocaleDateString()}</TableCell>
                                         </TableRow>
                                     ))
                                 )}
