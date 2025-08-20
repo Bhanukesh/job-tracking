@@ -90,6 +90,7 @@ class TestJobApplicationAPI:
         assert job_app["id"] == 1
         assert job_app["jobTitle"] == "Frontend Developer"
         assert job_app["company"] == "OpenAI"
+        assert job_app["location"] == "San Francisco, CA"
     
     def test_get_nonexistent_job_application(self):
         """Test getting a job application that doesn't exist"""
@@ -106,7 +107,8 @@ class TestJobApplicationAPI:
             "status": "Interview",
             "description": "Updated description",
             "jobUrl": "https://updated.com",
-            "salary": "$150,000"
+            "salary": "$150,000",
+            "location": "Los Angeles, CA"
         }
         
         response = self.client.put("/api/JobApplications/1", json=update_data)
@@ -119,6 +121,7 @@ class TestJobApplicationAPI:
         assert job_app["jobTitle"] == "Senior Frontend Developer"
         assert job_app["company"] == "Updated Company"
         assert job_app["salary"] == "$150,000"
+        assert job_app["location"] == "Los Angeles, CA"
     
     def test_update_nonexistent_job_application(self):
         """Test updating a job application that doesn't exist"""
@@ -162,14 +165,16 @@ class TestJobApplicationAPI:
                 "company": "Company A",
                 "dateApplied": "2025-08-20",
                 "status": "Applied",
-                "salary": "$120,000"
+                "salary": "$120,000",
+                "location": "Chicago, IL"
             },
             {
                 "jobTitle": "DevOps Engineer", 
                 "company": "Company B",
                 "dateApplied": "2025-08-21",
                 "status": "Interview",
-                "salary": "$130,000"
+                "salary": "$130,000",
+                "location": "Denver, CO"
             }
         ]
         
