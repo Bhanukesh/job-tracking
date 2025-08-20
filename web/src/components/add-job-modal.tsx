@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,17 +17,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus } from "lucide-react"
-
-interface JobFormData {
-  jobTitle: string;
-  company: string;
-  location: string;
-  salary: string;
-  status: string;
-  description: string;
-  jobUrl: string;
-}
+import { Plus, Loader2 } from "lucide-react"
+import { jobApplicationSchema, transformToCreateCommand, type JobApplicationFormData } from "@/lib/validations/jobApplication"
+import { useCreateJobApplicationMutation } from "@/store/api/enhanced/jobApplications"
 
 interface AddJobModalProps {
   trigger?: React.ReactNode;
@@ -33,39 +27,49 @@ interface AddJobModalProps {
 
 export function AddJobModal({ trigger }: AddJobModalProps) {
   const [open, setOpen] = useState(false)
-  const [formData, setFormData] = useState<JobFormData>({
-    jobTitle: "",
-    company: "",
-    location: "",
-    salary: "",
-    status: "Applied",
-    description: "",
-    jobUrl: ""
-  })
+  const [createJobApplication, { isLoading }] = useCreateJobApplicationMutation()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle form submission here
-    console.log("Form submitted:", formData)
-    setOpen(false)
-    // Reset form
-    setFormData({
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+    setValue,
+  } = useForm<JobApplicationFormData>({
+    resolver: zodResolver(jobApplicationSchema),
+    defaultValues: {
       jobTitle: "",
       company: "",
       location: "",
       salary: "",
       status: "Applied",
       description: "",
-      jobUrl: ""
-    })
+      jobUrl: "",
+      dateApplied: new Date().toISOString().split('T')[0], // Today's date
+    },
+  })
+
+  const onSubmit = async (data: JobApplicationFormData) => {
+    try {
+      const createCommand = transformToCreateCommand(data)
+      await createJobApplication({ createJobApplicationCommand: createCommand }).unwrap()
+      setOpen(false)
+      reset()
+    } catch (error) {
+      console.error('Failed to create job application:', error)
+    }
   }
 
-  const handleInputChange = (field: keyof JobFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen)
+    if (!newOpen) {
+      reset()
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="bg-blue-600 hover:bg-blue-700 text-white">
@@ -81,30 +85,32 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
             Add a new job application to track your progress.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="jobTitle" className="text-sm font-medium">Job Title *</Label>
                 <Input
                   id="jobTitle"
-                  value={formData.jobTitle}
-                  onChange={(e) => handleInputChange("jobTitle", e.target.value)}
+                  {...register("jobTitle")}
                   placeholder="e.g. Senior Frontend Developer"
-                  required
                   className="text-sm"
                 />
+                {errors.jobTitle && (
+                  <p className="text-sm text-red-500">{errors.jobTitle.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company" className="text-sm font-medium">Company *</Label>
                 <Input
                   id="company"
-                  value={formData.company}
-                  onChange={(e) => handleInputChange("company", e.target.value)}
+                  {...register("company")}
                   placeholder="e.g. Google"
-                  required
                   className="text-sm"
                 />
+                {errors.company && (
+                  <p className="text-sm text-red-500">{errors.company.message}</p>
+                )}
               </div>
             </div>
 
@@ -113,69 +119,116 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                 <Label htmlFor="location" className="text-sm font-medium">Location</Label>
                 <Input
                   id="location"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange("location", e.target.value)}
+                  {...register("location")}
                   placeholder="e.g. San Francisco, CA"
                   className="text-sm"
                 />
+                {errors.location && (
+                  <p className="text-sm text-red-500">{errors.location.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="salary" className="text-sm font-medium">Salary Range</Label>
                 <Input
                   id="salary"
-                  value={formData.salary}
-                  onChange={(e) => handleInputChange("salary", e.target.value)}
+                  {...register("salary")}
                   placeholder="e.g. $120,000 - $150,000"
                   className="text-sm"
                 />
+                {errors.salary && (
+                  <p className="text-sm text-red-500">{errors.salary.message}</p>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm font-medium">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                  <SelectTrigger className="text-sm">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Applied">Applied</SelectItem>
-                    <SelectItem value="Interview">Interview</SelectItem>
-                    <SelectItem value="Offers">Offers</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="status" className="text-sm font-medium">Status *</Label>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="text-sm">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Applied">Applied</SelectItem>
+                        <SelectItem value="Interview">Interview</SelectItem>
+                        <SelectItem value="Offers">Offers</SelectItem>
+                        <SelectItem value="Rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.status && (
+                  <p className="text-sm text-red-500">{errors.status.message}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jobUrl" className="text-sm font-medium">Job URL</Label>
+                <Label htmlFor="dateApplied" className="text-sm font-medium">Date Applied *</Label>
                 <Input
-                  id="jobUrl"
-                  type="url"
-                  value={formData.jobUrl}
-                  onChange={(e) => handleInputChange("jobUrl", e.target.value)}
-                  placeholder="https://company.com/jobs/..."
+                  id="dateApplied"
+                  type="date"
+                  {...register("dateApplied")}
                   className="text-sm"
                 />
+                {errors.dateApplied && (
+                  <p className="text-sm text-red-500">{errors.dateApplied.message}</p>
+                )}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="jobUrl" className="text-sm font-medium">Job URL</Label>
+              <Input
+                id="jobUrl"
+                type="url"
+                {...register("jobUrl")}
+                placeholder="https://company.com/jobs/..."
+                className="text-sm"
+              />
+              {errors.jobUrl && (
+                <p className="text-sm text-red-500">{errors.jobUrl.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium">Job Description</Label>
               <Textarea
                 id="description"
-                value={formData.description}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange("description", e.target.value)}
+                {...register("description")}
                 placeholder="Paste the job description here..."
                 className="min-h-[100px] sm:min-h-[120px] resize-none text-sm"
               />
+              {errors.description && (
+                <p className="text-sm text-red-500">{errors.description.message}</p>
+              )}
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto text-sm text-white">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)} 
+              className="w-full sm:w-auto text-sm"
+              disabled={isLoading}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm text-white">
-              Add New Job
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                'Add New Job'
+              )}
             </Button>
           </DialogFooter>
         </form>

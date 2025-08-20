@@ -5,9 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { FileText, Users, MessageSquare, XCircle, Handshake } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { AddJobModal } from "@/components/add-job-modal"
 
 export default function DashboardPage() {
+    const router = useRouter()
+    
     const stats = [
         {
             title: "Total Applications",
@@ -40,6 +43,7 @@ export default function DashboardPage() {
     ]
 
     interface JobApplication {
+        id: string;
         jobTitle: string;
         company: string;
         location: string;
@@ -49,6 +53,7 @@ export default function DashboardPage() {
 
     const recentApplications: JobApplication[] = [
         {
+            id: "1",
             jobTitle: "Senior Frontend Developer",
             company: "Google",
             location: "Mountain View, CA",
@@ -56,6 +61,7 @@ export default function DashboardPage() {
             dateApplied: "2025-08-15"
         },
         {
+            id: "2",
             jobTitle: "Full Stack Engineer",
             company: "Microsoft",
             location: "Seattle, WA",
@@ -63,6 +69,7 @@ export default function DashboardPage() {
             dateApplied: "2025-08-12"
         },
         {
+            id: "3",
             jobTitle: "React Developer",
             company: "Meta",
             location: "Menlo Park, CA",
@@ -70,6 +77,7 @@ export default function DashboardPage() {
             dateApplied: "2025-08-10"
         },
         {
+            id: "4",
             jobTitle: "Software Engineer",
             company: "Apple",
             location: "Cupertino, CA",
@@ -77,6 +85,7 @@ export default function DashboardPage() {
             dateApplied: "2025-08-08"
         },
         {
+            id: "5",
             jobTitle: "Frontend Engineer",
             company: "Netflix",
             location: "Los Gatos, CA",
@@ -149,8 +158,8 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                             ) : (
-                                recentApplications.map((app, index: number) => (
-                                    <Card key={index} className="p-4 border border-gray-200">
+                                recentApplications.map((app) => (
+                                    <Card key={app.id} className="p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push(`/applications/${app.id}`)}>
                                         <div className="space-y-3">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1 min-w-0">
@@ -199,8 +208,8 @@ export default function DashboardPage() {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    recentApplications.map((app, index: number) => (
-                                        <TableRow key={index} className="border-b border-border hover:bg-muted/50 transition-colors">
+                                    recentApplications.map((app) => (
+                                        <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/applications/${app.id}`)}>
                                             <TableCell className="px-6 py-4 font-medium">{app.jobTitle}</TableCell>
                                             <TableCell className="px-6 py-4">{app.company}</TableCell>
                                             <TableCell className="px-6 py-4">{app.location}</TableCell>
