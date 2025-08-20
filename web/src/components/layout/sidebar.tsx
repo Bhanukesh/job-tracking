@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const navigation = [
   {
@@ -34,8 +35,15 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ showLogo = false }: { showLogo?: boolean }) => (
     <div className="flex flex-col h-full">
+      {/* Logo Section - Only show when showLogo is true */}
+      {showLogo && (
+        <div className="flex items-center px-4 py-6 border-b border-sidebar-border">
+          <Briefcase className="h-6 w-6 text-sidebar-primary" />
+          <span className="ml-2 text-xl font-bold text-sidebar-foreground">Job Tracker</span>
+        </div>
+      )}
       
       {/* Navigation Section */}
       <div className="flex-1 px-4 py-6">
@@ -68,6 +76,14 @@ export function Sidebar({ className }: SidebarProps) {
           })}
         </nav>
       </div>
+
+      {/* Theme Toggle Section */}
+      <div className="px-4 py-4 border-t border-sidebar-border">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-sidebar-foreground">Theme</span>
+          <ThemeToggle />
+        </div>
+      </div>
     </div>
   )
 
@@ -92,14 +108,14 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-sidebar border-r border-sidebar-border">
-            <SidebarContent />
+            <SidebarContent showLogo={true} />
           </div>
         </div>
       )}
 
       {/* Desktop Sidebar */}
       <div className={cn("hidden md:flex md:flex-col md:fixed md:top-16 md:bottom-0 md:w-64 bg-sidebar border-r border-sidebar-border", className)}>
-        <SidebarContent />
+        <SidebarContent showLogo={false} />
       </div>
     </>
   )

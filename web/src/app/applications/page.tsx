@@ -85,15 +85,15 @@ export default function ApplicationsPage() {
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
             case 'Applied':
-                return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
+                return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-100'
             case 'Interview':
-                return 'bg-green-100 text-green-800 hover:bg-green-100'
+                return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 hover:bg-green-100'
             case 'Offer':
-                return 'bg-purple-100 text-purple-800 hover:bg-purple-100'
+                return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 hover:bg-purple-100'
             case 'Rejected':
-                return 'bg-red-100 text-red-800 hover:bg-red-100'
+                return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 hover:bg-red-100'
             default:
-                return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+                return 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 hover:bg-gray-100'
         }
     }
 
@@ -268,7 +268,7 @@ export default function ApplicationsPage() {
                         Previous
                     </Button>
                     <div className="flex space-x-1">
-                        <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 px-3 py-2 text-sm">
+                        <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-sm">
                             1
                         </Button>
                         <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
