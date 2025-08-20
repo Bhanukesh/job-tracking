@@ -40,6 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# testing
+/src/tests/
+
+# Allow team environment files
 !.env.production
 !.env.development
+!.env.example
 

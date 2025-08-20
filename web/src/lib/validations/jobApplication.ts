@@ -26,7 +26,7 @@ export const jobApplicationSchema = z.object({
     .or(z.literal("")),
   
   status: z
-    .enum(["Applied", "Interview", "Offers", "Rejected"], {
+    .enum(["Applied", "Interview", "Offer", "Rejected"], {
       required_error: "Status is required",
       invalid_type_error: "Please select a valid status",
     }),
@@ -62,4 +62,6 @@ export const transformToCreateCommand = (data: JobApplicationFormData) => ({
   status: data.status,
   description: data.description || null,
   jobUrl: data.jobUrl || null,
+  salary: data.salary || null,
+  location: data.location || null,
 });
