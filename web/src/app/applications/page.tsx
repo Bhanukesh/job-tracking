@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Edit, Trash2, Plus } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { EditJobModal } from "@/components/edit-job-modal"
 import { AddJobModal } from "@/components/add-job-modal"
 
@@ -24,6 +25,8 @@ interface JobApplication {
 }
 
 export default function ApplicationsPage() {
+    const router = useRouter()
+    
     const applications: JobApplication[] = [
         {
             id: "1",
@@ -144,7 +147,7 @@ export default function ApplicationsPage() {
                     <div className="block xl:hidden">
                         <div className="space-y-4 p-4 sm:p-6">
                             {applications.map((app) => (
-                                <Card key={app.id} className="p-4 border border-border hover:shadow-md transition-shadow">
+                                <Card key={app.id} className="p-4 border border-border hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push(`/applications/${app.id}`)}>
                                     <div className="space-y-4">
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
                                             <div className="flex-1 min-w-0 space-y-1">
@@ -176,7 +179,7 @@ export default function ApplicationsPage() {
                                             </div>
                                         </div>
                                         
-                                        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-border">
+                                        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
                                             <EditJobModal 
                                                 job={app}
                                                 trigger={
@@ -213,7 +216,7 @@ export default function ApplicationsPage() {
                             </TableHeader>
                             <TableBody>
                                 {applications.map((app) => (
-                                    <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                                    <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/applications/${app.id}`)}>
                                         <TableCell className="px-4 py-4">
                                             <Link 
                                                 href={`/applications/${app.id}`}
@@ -234,7 +237,7 @@ export default function ApplicationsPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="px-4 py-4 text-muted-foreground">{app.dateApplied}</TableCell>
-                                        <TableCell className="px-4 py-4">
+                                        <TableCell className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-end space-x-1">
                                                 <EditJobModal 
                                                     job={app}
