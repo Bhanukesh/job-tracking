@@ -87,7 +87,7 @@ export default function ApplicationsPage() {
                 return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
             case 'Interview':
                 return 'bg-green-100 text-green-800 hover:bg-green-100'
-            case 'Offers':
+            case 'Offer':
                 return 'bg-purple-100 text-purple-800 hover:bg-purple-100'
             case 'Rejected':
                 return 'bg-red-100 text-red-800 hover:bg-red-100'
@@ -97,24 +97,30 @@ export default function ApplicationsPage() {
     }
 
     return (
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 px-4 sm:px-6 lg:px-8">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <h1 className="text-xl sm:text-2xl font-bold">All Applications</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Applications</h1>
+                <div className="flex justify-end">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add New Job
+                    </Button>
+                </div>
             </div>
 
             {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <div className="relative flex-1 max-w-full sm:max-w-md">
+            <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
+                <div className="relative flex-1 max-w-full lg:max-w-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input 
                         placeholder="Search applications..." 
-                        className="pl-10 w-full"
+                        className="pl-10 w-full bg-white"
                     />
                 </div>
                 <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                     <Select defaultValue="all">
-                        <SelectTrigger className="w-full sm:w-48">
+                        <SelectTrigger className="w-full sm:w-48 bg-white">
                             <SelectValue placeholder="All Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -128,55 +134,61 @@ export default function ApplicationsPage() {
                     <Input 
                         type="date"
                         placeholder="mm/dd/yyyy"
-                        className="w-full sm:w-48"
+                        className="w-full sm:w-48 bg-white"
                     />
                 </div>
             </div>
 
             {/* Applications Table */}
-            <Card>
+            <Card className="overflow-hidden">
                 <CardContent className="p-0">
                     {/* Mobile Card View */}
-                    <div className="block lg:hidden">
-                        <div className="space-y-3 p-4 sm:p-6">
+                    <div className="block xl:hidden">
+                        <div className="space-y-4 p-4 sm:p-6">
                             {applications.map((app) => (
                                 <Card key={app.id} className="p-4 border border-gray-200 hover:shadow-md transition-shadow">
-                                    <div className="space-y-3">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1 min-w-0">
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+                                            <div className="flex-1 min-w-0 space-y-1">
                                                 <Link 
                                                     href={`/applications/${app.id}`}
-                                                    className="font-medium text-gray-900 hover:text-blue-600 hover:underline block truncate"
+                                                    className="font-semibold text-lg text-gray-900 hover:text-blue-600 hover:underline block"
                                                 >
                                                     {app.jobTitle}
                                                 </Link>
-                                                <p className="text-sm text-gray-600 truncate">{app.company}</p>
+                                                <p className="text-base text-gray-600 font-medium">{app.company}</p>
+                                                <p className="text-sm text-gray-500">{app.location}</p>
                                             </div>
                                             <Badge 
                                                 variant="secondary"
-                                                className={`${getStatusBadgeColor(app.status)} ml-2 flex-shrink-0`}
+                                                className={`${getStatusBadgeColor(app.status)} flex-shrink-0 text-sm px-3 py-1`}
                                             >
                                                 {app.status}
                                             </Badge>
                                         </div>
-                                        <div className="grid grid-cols-1 gap-2 text-sm text-gray-500">
-                                            <div className="flex items-center justify-between">
-                                                <span className="truncate">{app.location}</span>
-                                                <span className="flex-shrink-0 ml-2">{app.dateApplied}</span>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                            <div>
+                                                <span className="text-gray-500">Salary:</span>
+                                                <p className="font-medium text-gray-900">{app.salary}</p>
                                             </div>
-                                            <div className="truncate font-medium text-gray-900">{app.salary}</div>
+                                            <div>
+                                                <span className="text-gray-500">Applied:</span>
+                                                <p className="font-medium text-gray-900">{app.dateApplied}</p>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
+                                        
+                                        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-gray-100">
                                             <EditJobModal 
                                                 job={app}
                                                 trigger={
-                                                    <Button variant="ghost" size="sm" className="h-8 px-2">
+                                                    <Button variant="ghost" size="sm" className="h-8 px-3">
                                                         <Edit className="h-4 w-4 text-blue-600 mr-1" />
                                                         <span className="text-xs">Edit</span>
                                                     </Button>
                                                 }
                                             />
-                                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                                            <Button variant="ghost" size="sm" className="h-8 px-3">
                                                 <Trash2 className="h-4 w-4 text-red-600 mr-1" />
                                                 <span className="text-xs">Delete</span>
                                             </Button>
@@ -188,34 +200,34 @@ export default function ApplicationsPage() {
                     </div>
 
                     {/* Desktop Table View */}
-                    <div className="hidden lg:block">
+                    <div className="hidden xl:block overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="border-b bg-gray-50">
-                                    <TableHead className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">JOB TITLE</TableHead>
-                                    <TableHead className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">COMPANY</TableHead>
-                                    <TableHead className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">LOCATION</TableHead>
-                                    <TableHead className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">SALARY</TableHead>
-                                    <TableHead className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</TableHead>
-                                    <TableHead className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">DATE APPLIED</TableHead>
-                                    <TableHead className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</TableHead>
+                                <TableRow className="border-b bg-gray-50/50">
+                                    <TableHead className="px-4 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Job Title</TableHead>
+                                    <TableHead className="px-4 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</TableHead>
+                                    <TableHead className="px-4 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</TableHead>
+                                    <TableHead className="px-4 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Salary</TableHead>
+                                    <TableHead className="px-4 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</TableHead>
+                                    <TableHead className="px-4 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Date Applied</TableHead>
+                                    <TableHead className="px-4 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {applications.map((app) => (
-                                    <TableRow key={app.id} className="border-b border-gray-100 hover:bg-gray-50">
-                                        <TableCell className="px-6 py-4">
+                                    <TableRow key={app.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                                        <TableCell className="px-4 py-4">
                                             <Link 
                                                 href={`/applications/${app.id}`}
-                                                className="font-medium text-gray-900 hover:text-blue-600 hover:underline"
+                                                className="font-semibold text-gray-900 hover:text-blue-600 hover:underline transition-colors"
                                             >
                                                 {app.jobTitle}
                                             </Link>
                                         </TableCell>
-                                        <TableCell className="px-6 py-4 text-gray-900">{app.company}</TableCell>
-                                        <TableCell className="px-6 py-4 text-gray-500">{app.location}</TableCell>
-                                        <TableCell className="px-6 py-4 text-gray-900">{app.salary}</TableCell>
-                                        <TableCell className="px-6 py-4">
+                                        <TableCell className="px-4 py-4 text-gray-900 font-medium">{app.company}</TableCell>
+                                        <TableCell className="px-4 py-4 text-gray-600">{app.location}</TableCell>
+                                        <TableCell className="px-4 py-4 text-gray-900 font-medium">{app.salary}</TableCell>
+                                        <TableCell className="px-4 py-4">
                                             <Badge 
                                                 variant="secondary"
                                                 className={getStatusBadgeColor(app.status)}
@@ -223,9 +235,9 @@ export default function ApplicationsPage() {
                                                 {app.status}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="px-6 py-4 text-gray-500">{app.dateApplied}</TableCell>
-                                        <TableCell className="px-6 py-4">
-                                            <div className="flex items-center space-x-2">
+                                        <TableCell className="px-4 py-4 text-gray-600">{app.dateApplied}</TableCell>
+                                        <TableCell className="px-4 py-4">
+                                            <div className="flex items-center justify-end space-x-1">
                                                 <EditJobModal 
                                                     job={app}
                                                     trigger={
@@ -248,24 +260,31 @@ export default function ApplicationsPage() {
             </Card>
 
             {/* Pagination */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                <p className="text-sm text-gray-700 text-center sm:text-left">
-                    Showing 1 to 10 of 24 results
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 pt-4">
+                <p className="text-sm text-gray-600 text-center sm:text-left">
+                    Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
+                    <span className="font-medium">24</span> results
                 </p>
-                <div className="flex items-center justify-center space-x-1 sm:space-x-2">
-                    <Button variant="outline" size="sm" disabled className="px-2 sm:px-3">
+                <div className="flex items-center justify-center space-x-2">
+                    <Button variant="outline" size="sm" disabled className="px-3 py-2 text-sm">
                         Previous
                     </Button>
-                    <Button variant="default" size="sm" className="bg-blue-600 px-2 sm:px-3">
-                        1
-                    </Button>
-                    <Button variant="outline" size="sm" className="px-2 sm:px-3">
-                        2
-                    </Button>
-                    <Button variant="outline" size="sm" className="px-2 sm:px-3">
-                        3
-                    </Button>
-                    <Button variant="outline" size="sm" className="px-2 sm:px-3">
+                    <div className="flex space-x-1">
+                        <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 px-3 py-2 text-sm">
+                            1
+                        </Button>
+                        <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
+                            2
+                        </Button>
+                        <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
+                            3
+                        </Button>
+                        <span className="px-2 py-2 text-sm text-gray-500">...</span>
+                        <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
+                            10
+                        </Button>
+                    </div>
+                    <Button variant="outline" size="sm" className="px-3 py-2 text-sm">
                         Next
                     </Button>
                 </div>

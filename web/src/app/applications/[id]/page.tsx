@@ -1,8 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Edit, ExternalLink, MapPin, DollarSign, Calendar, Building } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -86,21 +87,12 @@ Benefits:
                             Back to Applications
                         </Button>
                     </Link>
-                    <div className="min-w-0">
-                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{jobDetails.jobTitle}</h1>
-                        <p className="text-base sm:text-lg text-gray-600 truncate">{jobDetails.company}</p>
-                    </div>
+                    
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-                    <Badge 
-                        variant="secondary"
-                        className={`${getStatusBadgeColor(jobDetails.status)} text-sm px-3 py-1 self-start sm:self-auto`}
-                    >
-                        {jobDetails.status}
-                    </Badge>
                     <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
                         <Edit className="h-4 w-4 mr-2" />
-                        Edit Application
+                        Edit Job Details
                     </Button>
                 </div>
             </div>
@@ -111,6 +103,18 @@ Benefits:
                     {/* Job Description */}
                     <Card>
                         <CardHeader>
+                            <div className="min-w-0">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{jobDetails.jobTitle}</h1>
+                        <p className="text-base sm:text-lg text-gray-600 truncate">{jobDetails.company}</p>
+                        <Badge 
+                        variant="secondary"
+                        className={`${getStatusBadgeColor(jobDetails.status)} text-sm px-3 py-1 my-2 self-start sm:self-auto`}
+                    >
+                        {jobDetails.status}
+                    </Badge>
+                    </div>
+                    <Separator className="my-4" />
+
                             <CardTitle className="text-lg sm:text-xl">Job Description</CardTitle>
                         </CardHeader>
                         <CardContent>

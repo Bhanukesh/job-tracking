@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Gift, MessageSquare, XCircle, Plus } from "lucide-react"
+import { FileText, Users, MessageSquare, XCircle, Handshake } from "lucide-react"
 import { AddJobModal } from "@/components/add-job-modal"
 
 export default function DashboardPage() {
@@ -19,14 +19,14 @@ export default function DashboardPage() {
         {
             title: "Offers",
             value: "8",
-            icon: Gift,
+            icon: Handshake,
             iconColor: "text-purple-500",
             bgColor: "bg-purple-50"
         },
         {
             title: "Interviews",
             value: "5",
-            icon: MessageSquare,
+            icon: Users,
             iconColor: "text-green-500",
             bgColor: "bg-green-50"
         },
