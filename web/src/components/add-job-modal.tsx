@@ -68,7 +68,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="mr-2 h-4 w-4" />
             Add New Job
           </Button>
@@ -171,10 +171,10 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto text-sm">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto text-sm text-white">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm">
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm text-white">
               Add New Job
             </Button>
           </DialogFooter>

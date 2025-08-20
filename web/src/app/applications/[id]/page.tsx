@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Edit, ExternalLink, MapPin, DollarSign, Calendar, Building } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
+import { EditJobModal } from "@/components/edit-job-modal"
 
 interface JobApplicationDetail {
     id: string;
@@ -90,7 +91,7 @@ Benefits:
                     
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-                    <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Job Details
                     </Button>
@@ -104,8 +105,8 @@ Benefits:
                     <Card>
                         <CardHeader>
                             <div className="min-w-0">
-                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">{jobDetails.jobTitle}</h1>
-                        <p className="text-base sm:text-lg text-gray-600 truncate">{jobDetails.company}</p>
+                        <h1 className="text-xl sm:text-2xl font-bold text-foreground break-words">{jobDetails.jobTitle}</h1>
+                        <p className="text-base sm:text-lg text-muted-foreground truncate">{jobDetails.company}</p>
                         <Badge 
                         variant="secondary"
                         className={`${getStatusBadgeColor(jobDetails.status)} text-sm px-3 py-1 my-2 self-start sm:self-auto`}
@@ -119,7 +120,7 @@ Benefits:
                         </CardHeader>
                         <CardContent>
                             <div className="prose max-w-none">
-                                <div className="whitespace-pre-line text-gray-700 leading-relaxed text-sm sm:text-base">
+                                <div className="whitespace-pre-line text-foreground leading-relaxed text-sm sm:text-base">
                                     {jobDetails.description}
                                 </div>
                             </div>
@@ -136,34 +137,34 @@ Benefits:
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-start space-x-3">
-                                <Building className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                <Building className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-gray-500">Company</p>
-                                    <p className="text-gray-900 break-words">{jobDetails.company}</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Company</p>
+                                    <p className="text-foreground break-words">{jobDetails.company}</p>
                                 </div>
                             </div>
                             
                             <div className="flex items-start space-x-3">
-                                <MapPin className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-gray-500">Location</p>
-                                    <p className="text-gray-900 break-words">{jobDetails.location}</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Location</p>
+                                    <p className="text-foreground break-words">{jobDetails.location}</p>
                                 </div>
                             </div>
                             
                             <div className="flex items-start space-x-3">
-                                <DollarSign className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                <DollarSign className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-gray-500">Salary Range</p>
-                                    <p className="text-gray-900 break-words">{jobDetails.salary}</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Salary Range</p>
+                                    <p className="text-foreground break-words">{jobDetails.salary}</p>
                                 </div>
                             </div>
                             
                             <div className="flex items-start space-x-3">
-                                <Calendar className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                                <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-gray-500">Date Applied</p>
-                                    <p className="text-gray-900">{jobDetails.dateApplied}</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Date Applied</p>
+                                    <p className="text-foreground">{jobDetails.dateApplied}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -204,15 +205,15 @@ Benefits:
                                 <div className="flex items-start space-x-3">
                                     <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium">Interview Scheduled</p>
-                                        <p className="text-xs text-gray-500">January 18, 2024</p>
+                                        <p className="text-sm font-medium text-foreground">Interview Scheduled</p>
+                                        <p className="text-xs text-muted-foreground">January 18, 2024</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-3">
                                     <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium">Application Submitted</p>
-                                        <p className="text-xs text-gray-500">January 14, 2024</p>
+                                        <p className="text-sm font-medium text-foreground">Application Submitted</p>
+                                        <p className="text-xs text-muted-foreground">January 14, 2024</p>
                                     </div>
                                 </div>
                             </div>

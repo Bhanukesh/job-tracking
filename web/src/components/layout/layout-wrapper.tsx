@@ -9,7 +9,7 @@ interface LayoutWrapperProps {
 
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen background">
       <Header />
       <div className="flex">
         <Sidebar />

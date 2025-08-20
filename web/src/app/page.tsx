@@ -179,12 +179,12 @@ export default function DashboardPage() {
                     <div className="hidden lg:block">
                         <Table>
                             <TableHeader>
-                                <TableRow className="border-b">
-                                    <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">JOB TITLE</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">COMPANY</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">LOCATION</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</TableHead>
-                                    <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">DATE APPLIED</TableHead>
+                                <TableRow className="border-b bg-muted">
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">JOB TITLE</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">COMPANY</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">LOCATION</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">STATUS</TableHead>
+                                    <TableHead className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">DATE APPLIED</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
                                     </TableRow>
                                 ) : (
                                     recentApplications.map((app, index: number) => (
-                                        <TableRow key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                                        <TableRow key={index} className="border-b border-border hover:bg-muted/50 transition-colors">
                                             <TableCell className="px-6 py-4 font-medium">{app.jobTitle}</TableCell>
                                             <TableCell className="px-6 py-4">{app.company}</TableCell>
                                             <TableCell className="px-6 py-4">{app.location}</TableCell>
