@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,35 +15,73 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Edit } from "lucide-react"
-
-interface JobFormData {
-  jobTitle: string;
-  company: string;
-  location: string;
-  salary: string;
-  status: string;
-  description: string;
-  jobUrl: string;
-}
+import { Edit, Loader2 } from "lucide-react"
+import { useUpdateJobApplicationMutation, type JobApplication } from "@/store/api/generated/jobApplications"
 
 interface EditJobModalProps {
-  job: JobFormData;
+  job?: JobApplication;
   trigger?: React.ReactNode;
 }
 
 export function EditJobModal({ job, trigger }: EditJobModalProps) {
   const [open, setOpen] = useState(false)
-  const [formData, setFormData] = useState<JobFormData>(job)
+  const [updateJobApplication, { isLoading }] = useUpdateJobApplicationMutation()
+  
+  const [formData, setFormData] = useState({
+    jobTitle: job?.jobTitle || '',
+    company: job?.company || '',
+    location: job?.location || '',
+    salary: job?.salary || '',
+    status: job?.status || 'Applied',
+    description: job?.description || '',
+    jobUrl: job?.jobUrl || '',
+    dateApplied: job?.dateApplied || new Date().toISOString().split('T')[0]
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Update form data when job prop changes
+  useEffect(() => {
+    if (job) {
+      setFormData({
+        jobTitle: job.jobTitle || '',
+        company: job.company || '',
+        location: job.location || '',
+        salary: job.salary || '',
+        status: job.status || 'Applied',
+        description: job.description || '',
+        jobUrl: job.jobUrl || '',
+        dateApplied: job.dateApplied || new Date().toISOString().split('T')[0]
+      })
+    }
+  }, [job])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log("Form updated:", formData)
-    setOpen(false)
+    if (!job?.id) {
+      console.error('No job ID provided for update')
+      return
+    }
+    
+    try {
+      await updateJobApplication({
+        id: job.id,
+        updateJobApplicationCommand: {
+          jobTitle: formData.jobTitle,
+          company: formData.company,
+          dateApplied: formData.dateApplied,
+          status: formData.status,
+          description: formData.description || null,
+          jobUrl: formData.jobUrl || null,
+          salary: formData.salary || null,
+          location: formData.location || null,
+        }
+      }).unwrap()
+      setOpen(false)
+    } catch (error) {
+      console.error('Failed to update job application:', error)
+    }
   }
 
-  const handleInputChange = (field: keyof JobFormData, value: string) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -123,22 +161,34 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                   <SelectContent>
                     <SelectItem value="Applied">Applied</SelectItem>
                     <SelectItem value="Interview">Interview</SelectItem>
-                    <SelectItem value="Offers">Offers</SelectItem>
+                    <SelectItem value="Offer">Offer</SelectItem>
                     <SelectItem value="Rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jobUrl" className="text-sm font-medium">Job URL</Label>
+                <Label htmlFor="dateApplied" className="text-sm font-medium">Date Applied *</Label>
                 <Input
-                  id="jobUrl"
-                  type="url"
-                  value={formData.jobUrl}
-                  onChange={(e) => handleInputChange("jobUrl", e.target.value)}
-                  placeholder="https://company.com/jobs/..."
+                  id="dateApplied"
+                  type="date"
+                  value={formData.dateApplied}
+                  onChange={(e) => handleInputChange("dateApplied", e.target.value)}
+                  required
                   className="text-sm"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="jobUrl" className="text-sm font-medium">Job URL</Label>
+              <Input
+                id="jobUrl"
+                type="url"
+                value={formData.jobUrl}
+                onChange={(e) => handleInputChange("jobUrl", e.target.value)}
+                placeholder="https://company.com/jobs/..."
+                className="text-sm"
+              />
             </div>
 
             <div className="space-y-2">
@@ -156,8 +206,19 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto text-sm">
               Cancel
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm">
-              Update Application
+            <Button 
+              type="submit" 
+              disabled={isLoading || !job?.id}
+              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update Application'
+              )}
             </Button>
           </DialogFooter>
         </form>

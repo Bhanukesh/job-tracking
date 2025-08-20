@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Loader2 } from "lucide-react"
 import { jobApplicationSchema, transformToCreateCommand, type JobApplicationFormData } from "@/lib/validations/jobApplication"
-import { useCreateJobApplicationMutation } from "@/store/api/enhanced/jobApplications"
+import { useCreateJobApplicationMutation } from "@/store/api/generated/jobApplications"
 
 interface AddJobModalProps {
   trigger?: React.ReactNode;
@@ -155,7 +155,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                       <SelectContent>
                         <SelectItem value="Applied">Applied</SelectItem>
                         <SelectItem value="Interview">Interview</SelectItem>
-                        <SelectItem value="Offers">Offers</SelectItem>
+                        <SelectItem value="Offer">Offer</SelectItem>
                         <SelectItem value="Rejected">Rejected</SelectItem>
                       </SelectContent>
                     </Select>

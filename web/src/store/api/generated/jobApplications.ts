@@ -89,6 +89,8 @@ export type JobApplication = {
   status: string;
   description?: string | null;
   jobUrl?: string | null;
+  salary?: string | null;
+  location?: string | null;
 };
 export type ValidationError = {
   loc: (string | number)[];
@@ -105,6 +107,8 @@ export type CreateJobApplicationCommand = {
   status: string;
   description?: string | null;
   jobUrl?: string | null;
+  salary?: string | null;
+  location?: string | null;
 };
 export type UpdateJobApplicationCommand = {
   jobTitle: string;
@@ -113,6 +117,8 @@ export type UpdateJobApplicationCommand = {
   status: string;
   description?: string | null;
   jobUrl?: string | null;
+  salary?: string | null;
+  location?: string | null;
 };
 export const {
   useGetJobApplicationsQuery,

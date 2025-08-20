@@ -11,6 +11,6 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=port,
-        workers=1, # Can only be 1 since we are using an in-memory database
+        workers=1, # Single worker for file-based database with thread safety
         reload=False  # Set to False in production
     )
