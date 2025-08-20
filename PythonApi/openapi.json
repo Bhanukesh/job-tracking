@@ -260,6 +260,28 @@
               }
             ],
             "title": "Job URL"
+          },
+          "salary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           }
         },
         "type": "object",
@@ -305,6 +327,28 @@
               }
             ],
             "title": "Job URL"
+          },
+          "salary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           }
         },
         "type": "object",
@@ -350,6 +394,28 @@
               }
             ],
             "title": "Job URL"
+          },
+          "salary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
           }
         },
         "type": "object",

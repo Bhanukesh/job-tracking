@@ -1,0 +1,35 @@
+{
+  "next_id": 4,
+  "job_applications": [
+    {
+      "id": 1,
+      "jobTitle": "Frontend Developer",
+      "company": "OpenAI",
+      "dateApplied": "2025-08-15",
+      "status": "Rejected",
+      "description": "Applied via LinkedIn. Contact: recruiter@openai.com",
+      "jobUrl": "https://openai.com/careers/frontend-dev",
+      "salary": "$120,000 - $150,000"
+    },
+    {
+      "id": 2,
+      "jobTitle": "Backend Developer",
+      "company": "Google",
+      "dateApplied": "2025-08-10",
+      "status": "Interview",
+      "description": "Applied through company website",
+      "jobUrl": "https://careers.google.com/backend-dev",
+      "salary": "$140,000 - $180,000"
+    },
+    {
+      "id": 3,
+      "jobTitle": "Full Stack Engineer",
+      "company": "Microsoft",
+      "dateApplied": "2025-08-05",
+      "status": "Applied",
+      "description": "Referred by colleague",
+      "jobUrl": "https://careers.microsoft.com/fullstack",
+      "salary": "$130,000 - $170,000"
+    }
+  ]
+}

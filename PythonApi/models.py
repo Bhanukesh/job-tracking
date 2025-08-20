@@ -11,6 +11,8 @@ class JobApplication(BaseModel):
     status: str
     description: Optional[str] = None
     jobUrl: Optional[str] = None
+    salary: Optional[str] = None
+    location: Optional[str] = None
 
 
 class CreateJobApplicationCommand(BaseModel):
@@ -20,6 +22,8 @@ class CreateJobApplicationCommand(BaseModel):
     status: str
     description: Optional[str] = None
     jobUrl: Optional[str] = None
+    salary: Optional[str] = None
+    location: Optional[str] = None
 
 
 class UpdateJobApplicationCommand(BaseModel):
@@ -29,3 +33,5 @@ class UpdateJobApplicationCommand(BaseModel):
     status: str
     description: Optional[str] = None
     jobUrl: Optional[str] = None
+    salary: Optional[str] = None
+    location: Optional[str] = None

@@ -1,0 +1,65 @@
+{
+  "next_id": 7,
+  "job_applications": [
+    {
+      "id": 1,
+      "jobTitle": "Frontend Developer",
+      "company": "OpenAI",
+      "dateApplied": "2025-08-15",
+      "status": "Rejected",
+      "description": "Applied via LinkedIn. Contact: recruiter@openai.com",
+      "jobUrl": "https://openai.com/careers/frontend-dev",
+      "salary": "$120,000 - $150,000"
+    },
+    {
+      "id": 2,
+      "jobTitle": "Backend Developer",
+      "company": "Google",
+      "dateApplied": "2025-08-10",
+      "status": "Interview",
+      "description": "Applied through company website",
+      "jobUrl": "https://careers.google.com/backend-dev",
+      "salary": "$140,000 - $180,000"
+    },
+    {
+      "id": 3,
+      "jobTitle": "Full Stack Engineer",
+      "company": "Microsoft",
+      "dateApplied": "2025-08-05",
+      "status": "Applied",
+      "description": "Referred by colleague",
+      "jobUrl": "https://careers.microsoft.com/fullstack",
+      "salary": "$130,000 - $170,000"
+    },
+    {
+      "id": 4,
+      "jobTitle": "DevOps Engineer",
+      "company": "Netflix",
+      "dateApplied": "2025-08-20",
+      "status": "Applied",
+      "description": "Applied through referral",
+      "jobUrl": "https://netflix.com/careers/devops",
+      "salary": "$150,000 - $180,000"
+    },
+    {
+      "id": 5,
+      "jobTitle": "BA",
+      "company": "Apple",
+      "dateApplied": "01/01/2025",
+      "status": "Applied",
+      "description": "adsfadcax",
+      "jobUrl": "apple.com",
+      "salary": "100,000"
+    },
+    {
+      "id": 6,
+      "jobTitle": "AI Engineer",
+      "company": "Sidley Austin",
+      "dateApplied": "08/20/2025",
+      "status": "Pending",
+      "description": "Full Stack work to develop an AI for reading and helping with contract negotiations",
+      "jobUrl": "https//www.sidley.com",
+      "salary": "50,000"
+    }
+  ]
+}
