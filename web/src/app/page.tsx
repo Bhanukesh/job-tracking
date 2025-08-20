@@ -12,35 +12,36 @@ export default function DashboardPage() {
     const router = useRouter()
     
     const stats = [
-        {
-            title: "Total Applications",
-            value: "24",
-            icon: FileText,
-            iconColor: "text-blue-500",
-            bgColor: "bg-blue-50"
-        },
-        {
-            title: "Offers",
-            value: "8",
-            icon: Handshake,
-            iconColor: "text-purple-500",
-            bgColor: "bg-purple-50"
-        },
-        {
-            title: "Interviews",
-            value: "5",
-            icon: Users,
-            iconColor: "text-green-500",
-            bgColor: "bg-green-50"
-        },
-        {
-            title: "Rejected",
-            value: "11",
-            icon: XCircle,
-            iconColor: "text-red-500",
-            bgColor: "bg-red-50"
-        }
-    ]
+  {
+    title: "Total Applications",
+    value: "24",
+    icon: FileText,
+    iconColor: "text-blue-500",
+    bgColor: "bg-blue-50 dark:bg-blue-900/30"
+  },
+  {
+    title: "Offers",
+    value: "8",
+    icon: Handshake,
+    iconColor: "text-purple-500",
+    bgColor: "bg-purple-50 dark:bg-purple-900/30"
+  },
+  {
+    title: "Interviews",
+    value: "5",
+    icon: Users,
+    iconColor: "text-green-500",
+    bgColor: "bg-green-50 dark:bg-green-900/30"
+  },
+  {
+    title: "Rejected",
+    value: "11",
+    icon: XCircle,
+    iconColor: "text-red-500",
+    bgColor: "bg-red-50 dark:bg-red-900/30"
+  }
+]
+
 
     interface JobApplication {
         id: string;
@@ -97,15 +98,15 @@ export default function DashboardPage() {
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
             case 'Applied':
-                return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
+                return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-100'
             case 'Interview':
-                return 'bg-green-100 text-green-800 hover:bg-green-100'
+                return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 hover:bg-green-100'
             case 'Offer':
-                return 'bg-purple-100 text-purple-800 hover:bg-purple-100'
+                return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 hover:bg-purple-100'
             case 'Rejected':
-                return 'bg-red-100 text-red-800 hover:bg-red-100'
+                return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 hover:bg-red-100'
             default:
-                return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+                return 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 hover:bg-gray-100'
         }
     }
 
@@ -127,10 +128,10 @@ export default function DashboardPage() {
                     <Card key={stat.title} className="p-4 sm:p-6">
                         <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide truncate">
+                                <p className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide truncate">
                                     {stat.title}
                                 </p>
-                                <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{stat.value}</p>
+                                <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2 text-foreground">{stat.value}</p>
                             </div>
                             <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg ${stat.bgColor} flex items-center justify-center flex-shrink-0 ml-3`}>
                                 <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.iconColor}`} />
@@ -151,20 +152,20 @@ export default function DashboardPage() {
                         <div className="space-y-3 px-4 sm:px-6">
                             {recentApplications.length === 0 ? (
                                 <div className="py-12 text-center">
-                                    <div className="flex flex-col items-center justify-center space-y-3 text-gray-500">
+                                    <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground">
                                         <FileText className="h-12 w-12" />
                                         <p className="text-lg">No applications found</p>
                                         <p className="text-sm">Get started by adding your first job application</p>
                                     </div>
                                 </div>
                             ) : (
-                                recentApplications.map((app) => (
-                                    <Card key={app.id} className="p-4 border border-gray-200 cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push(`/applications/${app.id}`)}>
+                                recentApplications.map((app, index: number) => (
+                                    <Card key={index} className="p-4 border border-border">
                                         <div className="space-y-3">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1 min-w-0">
-                                                    <h3 className="font-medium text-gray-900 truncate">{app.jobTitle}</h3>
-                                                    <p className="text-sm text-gray-600 truncate">{app.company}</p>
+                                                    <h3 className="font-medium text-foreground truncate">{app.jobTitle}</h3>
+                                                    <p className="text-sm text-muted-foreground truncate">{app.company}</p>
                                                 </div>
                                                 <Badge 
                                                     variant="secondary"
@@ -173,7 +174,7 @@ export default function DashboardPage() {
                                                     {app.status}
                                                 </Badge>
                                             </div>
-                                            <div className="flex items-center justify-between text-sm text-gray-500">
+                                            <div className="flex items-center justify-between text-sm text-muted-foreground">
                                                 <span className="truncate">{app.location}</span>
                                                 <span className="flex-shrink-0 ml-2">{app.dateApplied}</span>
                                             </div>
@@ -200,7 +201,7 @@ export default function DashboardPage() {
                                 {recentApplications.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={5} className="px-6 py-16 text-center">
-                                            <div className="flex flex-col items-center justify-center space-y-3 text-gray-500">
+                                            <div className="flex flex-col items-center justify-center space-y-3 text-muted-foreground">
                                                 <FileText className="h-12 w-12" />
                                                 <p className="text-lg">No applications found</p>
                                                 <p className="text-sm">Get started by adding your first job application</p>
@@ -221,7 +222,7 @@ export default function DashboardPage() {
                                                     {app.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="px-6 py-4 text-gray-500">{app.dateApplied}</TableCell>
+                                            <TableCell className="px-6 py-4 text-muted-foreground">{app.dateApplied}</TableCell>
                                         </TableRow>
                                     ))
                                 )}
