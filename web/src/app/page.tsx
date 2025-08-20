@@ -4,16 +4,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Users, MessageSquare, XCircle, Handshake, Loader2 } from "lucide-react"
+import { FileText, Users, MessageSquare, XCircle, Handshake, Loader2, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { AddJobModal } from "@/components/add-job-modal"
 import { useGetJobApplicationsQuery } from "@/store/api/generated/jobApplications"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { safeSortArray } from "@/lib/utils"
 
 export default function DashboardPage() {
     const router = useRouter()
     const { data: applications = [], isLoading, error } = useGetJobApplicationsQuery()
+    const [statusFilter, setStatusFilter] = useState<string | null>(null)
     
     // Calculate stats from real data
     const stats = useMemo(() => {
@@ -29,39 +30,59 @@ export default function DashboardPage() {
                 value: total.toString(),
                 icon: FileText,
                 iconColor: "text-blue-500",
-                bgColor: "bg-blue-50 dark:bg-blue-900/30"
+                bgColor: "bg-blue-50 dark:bg-blue-900/30",
+                status: null
             },
             {
                 title: "Offers",
                 value: (statusCounts.Offer || 0).toString(),
                 icon: Handshake,
                 iconColor: "text-purple-500",
-                bgColor: "bg-purple-50 dark:bg-purple-900/30"
+                bgColor: "bg-purple-50 dark:bg-purple-900/30",
+                status: "Offer"
             },
             {
                 title: "Interviews",
                 value: (statusCounts.Interview || 0).toString(),
                 icon: Users,
                 iconColor: "text-green-500",
-                bgColor: "bg-green-50 dark:bg-green-900/30"
+                bgColor: "bg-green-50 dark:bg-green-900/30",
+                status: "Interview"
             },
             {
                 title: "Rejected",
                 value: (statusCounts.Rejected || 0).toString(),
                 icon: XCircle,
                 iconColor: "text-red-500",
-                bgColor: "bg-red-50 dark:bg-red-900/30"
+                bgColor: "bg-red-50 dark:bg-red-900/30",
+                status: "Rejected"
             }
         ]
     }, [applications])
 
-    // Get recent applications (last 5)
+    // Get recent applications (last 5) with optional status filter
     // Note: RTK Query returns immutable arrays, so we use safeSortArray to create a copy before sorting
     const recentApplications = useMemo(() => {
-        return safeSortArray(applications, (a, b) => 
+        let filteredApps = applications;
+        
+        // Apply status filter if active
+        if (statusFilter) {
+            filteredApps = applications.filter(app => app.status === statusFilter);
+        }
+        
+        return safeSortArray(filteredApps, (a, b) => 
             new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime()
         ).slice(0, 5)
-    }, [applications])
+    }, [applications, statusFilter])
+
+    const handleStatusFilter = (status: string | null) => {
+        // Toggle filter: if same status is clicked, clear filter
+        setStatusFilter(statusFilter === status ? null : status)
+    }
+
+    const clearFilter = () => {
+        setStatusFilter(null)
+    }
 
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
@@ -105,7 +126,15 @@ export default function DashboardPage() {
             {/* Stats Cards - Responsive grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {stats.map((stat) => (
-                    <Card key={stat.title} className="p-4 sm:p-6">
+                    <Card 
+                        key={stat.title} 
+                        className={`p-4 sm:p-6 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                            statusFilter === stat.status 
+                                ? 'ring-2 ring-offset-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-900/20' 
+                                : 'hover:bg-muted/50'
+                        }`}
+                        onClick={() => handleStatusFilter(stat.status)}
+                    >
                         <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide truncate">
@@ -130,7 +159,25 @@ export default function DashboardPage() {
             {/* Recent Applications Table */}
             <Card className="mt-6 sm:mt-8">
                 <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
-                    <CardTitle className="text-lg sm:text-xl font-semibold">Recent Applications</CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg sm:text-xl font-semibold">
+                            {statusFilter 
+                                ? `${statusFilter} Applications` 
+                                : 'Recent Applications'
+                            }
+                        </CardTitle>
+                        {statusFilter && (
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={clearFilter}
+                                className="flex items-center gap-2"
+                            >
+                                <X className="h-4 w-4" />
+                                Clear Filter
+                            </Button>
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent className="px-0">
                     {/* Mobile Card View */}

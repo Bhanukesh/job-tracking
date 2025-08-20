@@ -8,72 +8,67 @@ import { ArrowLeft, Edit, ExternalLink, MapPin, DollarSign, Calendar, Building }
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { EditJobModal } from "@/components/edit-job-modal"
-
-interface JobApplicationDetail {
-    id: string;
-    jobTitle: string;
-    company: string;
-    location: string;
-    salary: string;
-    status: 'Applied' | 'Interview' | 'Offers' | 'Rejected';
-    dateApplied: string;
-    description: string;
-    jobUrl: string;
-}
+import { useGetJobApplicationsQuery } from "@/store/api/enhanced/jobApplications"
+import { useMemo } from "react"
 
 export default function JobDetailPage() {
     const params = useParams()
     const jobId = params.id as string
 
-    // Mock data - in real app this would come from API
-    const jobDetails: JobApplicationDetail = {
-        id: jobId,
-        jobTitle: "Senior Frontend Developer",
-        company: "TechCorp Solutions",
-        location: "San Francisco, CA",
-        salary: "$120,000 - $150,000",
-        status: "Interview",
-        dateApplied: "January 14, 2024",
-        description: `We are looking for a Senior Frontend Developer to join our dynamic team. The ideal candidate will have extensive experience with React, TypeScript, and modern frontend technologies.
+    // Fetch applications and find the specific job
+    const { data: applications = [], isLoading, error } = useGetJobApplicationsQuery()
+    
+    // Find the specific job application by ID
+    const jobDetails = useMemo(() => {
+        return applications.find(app => app.id.toString() === jobId)
+    }, [applications, jobId])
 
-Key Responsibilities:
-• Develop and maintain high-quality web applications using React and TypeScript
-• Collaborate with designers and backend developers to implement user interfaces
-• Optimize applications for maximum speed and scalability
-• Write clean, maintainable, and well-documented code
-• Participate in code reviews and mentor junior developers
-• Stay up-to-date with the latest frontend technologies and best practices
+    // If loading, show loading state
+    if (isLoading) {
+        return (
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                        <p className="mt-2 text-muted-foreground">Loading job details...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
-Requirements:
-• 5+ years of experience in frontend development
-• Strong proficiency in React, TypeScript, HTML5, CSS3
-• Experience with state management libraries (Redux, Zustand)
-• Knowledge of modern build tools (Webpack, Vite)
-• Understanding of responsive design principles
-• Experience with testing frameworks (Jest, React Testing Library)
-• Strong problem-solving skills and attention to detail
-
-Benefits:
-• Competitive salary and equity package
-• Comprehensive health, dental, and vision insurance
-• Flexible work arrangements (hybrid/remote options)
-• Professional development budget
-• Generous PTO policy`,
-        jobUrl: "https://techcorp.com/careers/senior-frontend-developer"
+    // If job not found, show not found state
+    if (!jobDetails) {
+        return (
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold text-foreground">Job Not Found</h1>
+                        <p className="mt-2 text-muted-foreground">The job application you're looking for doesn't exist.</p>
+                        <Link href="/applications" className="mt-4 inline-block">
+                            <Button variant="outline">
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                Back to Applications
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
             case 'Applied':
-                return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
+                return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 hover:bg-blue-100'
             case 'Interview':
-                return 'bg-green-100 text-green-800 hover:bg-green-100'
-            case 'Offers':
-                return 'bg-purple-100 text-purple-800 hover:bg-purple-100'
+                return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 hover:bg-green-100'
+            case 'Offer':
+                return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 hover:bg-purple-100'
             case 'Rejected':
-                return 'bg-red-100 text-red-800 hover:bg-red-100'
+                return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 hover:bg-red-100'
             default:
-                return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+                return 'bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 hover:bg-gray-100'
         }
     }
 
@@ -91,10 +86,15 @@ Benefits:
                     
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Job Details
-                    </Button>
+                    <EditJobModal 
+                        job={jobDetails}
+                        trigger={
+                            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Job Details
+                            </Button>
+                        }
+                    />
                 </div>
             </div>
 
@@ -164,7 +164,7 @@ Benefits:
                                 <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-muted-foreground">Date Applied</p>
-                                    <p className="text-foreground">{jobDetails.dateApplied}</p>
+                                    <p className="text-foreground">{new Date(jobDetails.dateApplied).toLocaleDateString()}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -179,19 +179,25 @@ Benefits:
                             <Button 
                                 variant="outline" 
                                 className="w-full justify-start text-sm"
-                                onClick={() => window.open(jobDetails.jobUrl, '_blank')}
+                                onClick={() => jobDetails.jobUrl && window.open(jobDetails.jobUrl, '_blank')}
+                                disabled={!jobDetails.jobUrl}
                             >
                                 <ExternalLink className="h-4 w-4 mr-2 flex-shrink-0" />
                                 <span className="truncate">View Original Job Posting</span>
                             </Button>
                             
-                            <Button 
-                                variant="outline" 
-                                className="w-full justify-start text-sm"
-                            >
-                                <Edit className="h-4 w-4 mr-2 flex-shrink-0" />
-                                Update Status
-                            </Button>
+                            <EditJobModal 
+                                job={jobDetails}
+                                trigger={
+                                    <Button 
+                                        variant="outline" 
+                                        className="w-full justify-start text-sm"
+                                    >
+                                        <Edit className="h-4 w-4 mr-2 flex-shrink-0" />
+                                        Update Status
+                                    </Button>
+                                }
+                            />
                         </CardContent>
                     </Card>
 
@@ -202,18 +208,25 @@ Benefits:
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                <div className="flex items-start space-x-3">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                    <div className="min-w-0">
-                                        <p className="text-sm font-medium text-foreground">Interview Scheduled</p>
-                                        <p className="text-xs text-muted-foreground">January 18, 2024</p>
+                                {/* Show timeline based on status */}
+                                {(jobDetails.status === 'Interview' || jobDetails.status === 'Offer') && (
+                                    <div className="flex items-start space-x-3">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-foreground">
+                                                {jobDetails.status === 'Interview' ? 'Interview Scheduled' : 'Offer Received'}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                                 <div className="flex items-start space-x-3">
                                     <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                                     <div className="min-w-0">
                                         <p className="text-sm font-medium text-foreground">Application Submitted</p>
-                                        <p className="text-xs text-muted-foreground">January 14, 2024</p>
+                                        <p className="text-xs text-muted-foreground">{new Date(jobDetails.dateApplied).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                             </div>

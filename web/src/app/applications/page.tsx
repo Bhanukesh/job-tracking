@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, KeyboardEvent } from "react"
+import { useState, useMemo, KeyboardEvent, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -12,12 +12,13 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { EditJobModal } from "@/components/edit-job-modal"
 import { AddJobModal } from "@/components/add-job-modal"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useGetJobApplicationsQuery, useDeleteJobApplicationMutation } from "@/store/api/generated/jobApplications"
 
 export default function ApplicationsPage() {
     const router = useRouter()
     const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 20
+    const itemsPerPage = 7
     const [searchTerm, setSearchTerm] = useState("")
     const [statusFilter, setStatusFilter] = useState("all")
     const [dateFilter, setDateFilter] = useState("")
@@ -25,36 +26,72 @@ export default function ApplicationsPage() {
     const { data: applications = [], isLoading, error } = useGetJobApplicationsQuery()
     const [deleteJobApplication, { isLoading: isDeleting }] = useDeleteJobApplicationMutation()
 
+    // Reset to page 1 when applications data changes (new items added)
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [applications?.length])
+
     const handleDelete = async (id: number) => {
-        if (confirm('Are you sure you want to delete this application?')) {
-            try {
-                await deleteJobApplication({ id }).unwrap()
-            } catch (error) {
-                console.error('Failed to delete application:', error)
-            }
+        try {
+            await deleteJobApplication({ id }).unwrap()
+        } catch (error) {
+            console.error('Failed to delete application:', error)
         }
     }
 
     const filteredApplications = useMemo(() => {
-        if (!applications) return []
+        if (!applications || applications.length === 0) return []
         
-        return applications.filter(app => {
-            // Search filter - check job title, company, and location
-            const matchesSearch = searchTerm === "" || 
-                app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                app.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (app.location && app.location.toLowerCase().includes(searchTerm.toLowerCase()))
-            
-            // Status filter
-            const matchesStatus = statusFilter === "all" || 
-                app.status.toLowerCase() === statusFilter.toLowerCase()
-            
-            // Date filter
-            const matchesDate = dateFilter === "" || 
-                new Date(app.dateApplied).toISOString().split('T')[0] === dateFilter
-            
-            return matchesSearch && matchesStatus && matchesDate
-        })
+        return applications
+            .filter(app => {
+                // Search filter - check job title, company, and location
+                const matchesSearch = searchTerm === "" || 
+                    app.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    app.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (app.location && app.location.toLowerCase().includes(searchTerm.toLowerCase()))
+                
+                // Status filter
+                const matchesStatus = statusFilter === "all" || 
+                    app.status.toLowerCase() === statusFilter.toLowerCase()
+                
+                // Date filter - handle different date formats
+                const matchesDate = dateFilter === "" || (() => {
+                    try {
+                        // Handle both date string formats
+                        const appDate = new Date(app.dateApplied);
+                        const filterDate = new Date(dateFilter);
+                        
+                        // Compare dates without time component
+                        return appDate.getFullYear() === filterDate.getFullYear() &&
+                               appDate.getMonth() === filterDate.getMonth() &&
+                               appDate.getDate() === filterDate.getDate();
+                    } catch (error) {
+                        // Fallback: try string comparison
+                        return app.dateApplied.startsWith(dateFilter) || 
+                               app.dateApplied.includes(dateFilter);
+                    }
+                })()
+                
+                return matchesSearch && matchesStatus && matchesDate
+            })
+            .sort((a, b) => {
+                // Sort by date applied in descending order (newest first)
+                const dateA = new Date(a.dateApplied);
+                const dateB = new Date(b.dateApplied);
+                
+                // If dates are invalid, treat them as oldest
+                const timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
+                const timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
+                
+                const dateDiff = timeB - timeA;
+                
+                // If dates are the same, sort by ID descending (newer entries typically have higher IDs)
+                if (dateDiff === 0) {
+                    return (b.id || 0) - (a.id || 0);
+                }
+                
+                return dateDiff;
+            })
     }, [applications, searchTerm, statusFilter, dateFilter])
 
     const paginatedApplications = useMemo(() => {
@@ -83,6 +120,24 @@ export default function ApplicationsPage() {
     const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             setCurrentPage(1) // Reset to first page when searching
+        }
+    }
+
+    // Reset to page 1 when filters change
+    const handleStatusFilterChange = (value: string) => {
+        setStatusFilter(value)
+        setCurrentPage(1)
+    }
+
+    const handleDateFilterChange = (value: string) => {
+        setDateFilter(value)
+        setCurrentPage(1)
+    }
+
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value)
+        if (value === "") {
+            setCurrentPage(1)
         }
     }
 
@@ -117,14 +172,14 @@ export default function ApplicationsPage() {
                         <Input
                             placeholder="Search applications..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => handleSearchChange(e.target.value)}
                             onKeyDown={handleSearchKeyDown}
                             className="pl-10"
                         />
                     </div>
 
                     {/* Status Filter */}
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                         <SelectTrigger className="w-full sm:w-48">
                             <SelectValue placeholder="All Status" />
                         </SelectTrigger>
@@ -142,7 +197,7 @@ export default function ApplicationsPage() {
                         type="date"
                         placeholder="mm/dd/yyyy"
                         value={dateFilter}
-                        onChange={(e) => setDateFilter(e.target.value)}
+                        onChange={(e) => handleDateFilterChange(e.target.value)}
                         className="w-full sm:w-48"
                     />
                 </div>
@@ -182,13 +237,11 @@ export default function ApplicationsPage() {
                                 </div>
                             ) : (
                                 paginatedApplications.map((app) => (
-                                    <Card key={app.id} className="p-4 border border-border">
+                                    <Card key={app.id} className="p-4 border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => router.push(`/applications/${app.id}`)}>
                                         <div className="space-y-3">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1 min-w-0">
-                                                    <Link href={`/applications/${app.id}`} className="hover:underline">
-                                                        <h3 className="font-medium text-foreground truncate">{app.jobTitle}</h3>
-                                                    </Link>
+                                                    <h3 className="font-medium text-foreground truncate">{app.jobTitle}</h3>
                                                     <p className="text-sm text-muted-foreground truncate">{app.company}</p>
                                                 </div>
                                                 <Badge 
@@ -211,14 +264,18 @@ export default function ApplicationsPage() {
                                                             </Button>
                                                         } 
                                                     />
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        onClick={() => handleDelete(app.id)}
-                                                        disabled={isDeleting}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    <ConfirmDialog
+                                                        trigger={
+                                                            <Button variant="outline" size="sm">
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        }
+                                                        title="Delete Application"
+                                                        description={`Are you sure you want to delete the application for ${app.jobTitle} at ${app.company}? This action cannot be undone.`}
+                                                        confirmText="Delete"
+                                                        onConfirm={() => handleDelete(app.id)}
+                                                        variant="destructive"
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="text-xs text-muted-foreground">
@@ -310,18 +367,24 @@ export default function ApplicationsPage() {
                                                         job={app}
                                                         trigger={
                                                             <Button variant="outline" size="sm">
+                                                                 <Edit className="h-4 w-4 mr-2 flex-shrink-0" />
                                                                 Edit
                                                             </Button>
                                                         } 
                                                     />
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        onClick={() => handleDelete(app.id)}
-                                                        disabled={isDeleting}
-                                                    >
-                                                        Delete
-                                                    </Button>
+                                                    <ConfirmDialog
+                                                        trigger={
+                                                            <Button variant="outline" size="sm" >
+                                                                <Trash2 className="h-4 w-4 mr-2 flex-shrink-0" />
+                                                                Delete
+                                                            </Button>
+                                                        }
+                                                        title="Delete Application"
+                                                        description={`Are you sure you want to delete the application for ${app.jobTitle} at ${app.company}? This action cannot be undone.`}
+                                                        confirmText="Delete"
+                                                        onConfirm={() => handleDelete(app.id)}
+                                                        variant="destructive"
+                                                    />
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -351,9 +414,35 @@ export default function ApplicationsPage() {
                                 <ChevronLeft className="h-4 w-4" />
                                 Previous
                             </Button>
-                            <span className="text-sm text-muted-foreground">
-                                Page {currentPage} of {totalPages}
-                            </span>
+                            
+                            {/* Page Numbers */}
+                            <div className="flex items-center space-x-1">
+                                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                                    let pageNum;
+                                    if (totalPages <= 5) {
+                                        pageNum = i + 1;
+                                    } else if (currentPage <= 3) {
+                                        pageNum = i + 1;
+                                    } else if (currentPage > totalPages - 3) {
+                                        pageNum = totalPages - 4 + i;
+                                    } else {
+                                        pageNum = currentPage - 2 + i;
+                                    }
+                                    
+                                    return (
+                                        <Button
+                                            key={pageNum}
+                                            variant={currentPage === pageNum ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => setCurrentPage(pageNum)}
+                                            className="w-8 h-8 p-0 dark:bg-accent hover:bg-accent-hover dark:text-white"
+                                        >
+                                            {pageNum}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+                            
                             <Button
                                 variant="outline"
                                 size="sm"
