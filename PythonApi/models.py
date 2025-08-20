@@ -1,17 +1,31 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import date
 
 
-class TodoItem(BaseModel):
+class JobApplication(BaseModel):
     id: int
-    title: Optional[str] = None
-    isComplete: bool = False
+    jobTitle: str
+    company: str
+    dateApplied: str
+    status: str
+    description: Optional[str] = None
+    jobUrl: Optional[str] = None
 
 
-class CreateTodoCommand(BaseModel):
-    title: str
+class CreateJobApplicationCommand(BaseModel):
+    jobTitle: str
+    company: str
+    dateApplied: str
+    status: str
+    description: Optional[str] = None
+    jobUrl: Optional[str] = None
 
 
-class UpdateTodoCommand(BaseModel):
-    title: str
-    isComplete: bool
+class UpdateJobApplicationCommand(BaseModel):
+    jobTitle: str
+    company: str
+    dateApplied: str
+    status: str
+    description: Optional[str] = None
+    jobUrl: Optional[str] = None
