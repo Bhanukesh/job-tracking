@@ -3,146 +3,235 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from database import InMemoryDatabase
-from models import TodoItem
+from database import FileDatabase
+from models import JobApplication, CreateJobApplicationCommand, UpdateJobApplicationCommand
+import os
 
 
-class TestInMemoryDatabase:
-    """Unit tests for the InMemoryDatabase class"""
+class TestFileDatabase:
+    """Unit tests for the FileDatabase class"""
     
     def setup_method(self):
         """Create a fresh database instance for each test"""
-        self.db = InMemoryDatabase()
+        self.test_db_file = "test_job_applications.json"
+        if os.path.exists(self.test_db_file):
+            os.remove(self.test_db_file)
+        self.db = FileDatabase(self.test_db_file)
+    
+    def teardown_method(self):
+        """Clean up test database file after each test"""
+        if os.path.exists(self.test_db_file):
+            os.remove(self.test_db_file)
     
     def test_initial_state(self):
-        """Test that database starts empty"""
-        todos = self.db.get_all_todos()
-        assert todos == []
-        assert len(todos) == 0
+        """Test that database starts with sample data"""
+        job_apps = self.db.get_all_job_applications()
+        assert len(job_apps) == 3  # Sample data has 3 entries
+        assert all(isinstance(app, JobApplication) for app in job_apps)
     
-    def test_create_single_todo(self):
-        """Test creating a single todo"""
-        todo_id = self.db.create_todo("Test Todo")
-        assert todo_id == 1
+    def test_create_single_job_application(self):
+        """Test creating a single job application"""
+        command = CreateJobApplicationCommand(
+            jobTitle="Software Engineer",
+            company="Test Corp",
+            dateApplied="2025-08-20",
+            status="Applied",
+            description="Test application",
+            jobUrl="https://test.com",
+            salary="$100,000",
+            location="Remote"
+        )
+        job_id = self.db.create_job_application(command)
+        assert job_id == 4  # Next ID after sample data
         
-        todos = self.db.get_all_todos()
-        assert len(todos) == 1
-        assert todos[0].id == 1
-        assert todos[0].title == "Test Todo"
-        assert todos[0].isComplete == False
+        job_apps = self.db.get_all_job_applications()
+        assert len(job_apps) == 4  # 3 sample + 1 new
+        new_app = next(app for app in job_apps if app.id == job_id)
+        assert new_app.jobTitle == "Software Engineer"
+        assert new_app.company == "Test Corp"
+        assert new_app.salary == "$100,000"
+        assert new_app.location == "Remote"
     
-    def test_create_multiple_todos(self):
-        """Test creating multiple todos with unique IDs"""
-        id1 = self.db.create_todo("First Todo")
-        id2 = self.db.create_todo("Second Todo")
-        id3 = self.db.create_todo("Third Todo")
+    def test_create_multiple_job_applications(self):
+        """Test creating multiple job applications with unique IDs"""
+        commands = [
+            CreateJobApplicationCommand(
+                jobTitle="Frontend Developer",
+                company="Company A",
+                dateApplied="2025-08-20",
+                status="Applied",
+                salary="$90,000",
+                location="NYC"
+            ),
+            CreateJobApplicationCommand(
+                jobTitle="Backend Developer",
+                company="Company B",
+                dateApplied="2025-08-21",
+                status="Interview",
+                salary="$95,000",
+                location="SF"
+            )
+        ]
         
-        assert id1 == 1
-        assert id2 == 2
-        assert id3 == 3
+        id1 = self.db.create_job_application(commands[0])
+        id2 = self.db.create_job_application(commands[1])
         
-        todos = self.db.get_all_todos()
-        assert len(todos) == 3
-        assert todos[0].title == "First Todo"
-        assert todos[1].title == "Second Todo"
-        assert todos[2].title == "Third Todo"
+        assert id1 == 4  # After sample data
+        assert id2 == 5
+        
+        job_apps = self.db.get_all_job_applications()
+        assert len(job_apps) == 5  # 3 sample + 2 new
+        
+        new_apps = [app for app in job_apps if app.id >= 4]
+        assert new_apps[0].jobTitle == "Frontend Developer"
+        assert new_apps[1].jobTitle == "Backend Developer"
     
-    def test_update_existing_todo(self):
-        """Test updating an existing todo"""
-        todo_id = self.db.create_todo("Original Title")
+    def test_update_existing_job_application(self):
+        """Test updating an existing job application"""
+        # Use existing sample data (id=1)
+        update_command = UpdateJobApplicationCommand(
+            jobTitle="Senior Frontend Developer",
+            company="Updated Company",
+            dateApplied="2025-08-22",
+            status="Offer",
+            description="Updated description",
+            jobUrl="https://updated.com",
+            salary="$150,000",
+            location="San Diego, CA"
+        )
         
-        success = self.db.update_todo(todo_id, "Updated Title", True)
+        success = self.db.update_job_application(1, update_command)
         assert success == True
         
-        todo = self.db.get_todo_by_id(todo_id)
-        assert todo is not None
-        assert todo.title == "Updated Title"
-        assert todo.isComplete == True
+        job_app = self.db.get_job_application_by_id(1)
+        assert job_app is not None
+        assert job_app.jobTitle == "Senior Frontend Developer"
+        assert job_app.company == "Updated Company"
+        assert job_app.salary == "$150,000"
+        assert job_app.location == "San Diego, CA"
     
-    def test_update_nonexistent_todo(self):
-        """Test updating a todo that doesn't exist"""
-        success = self.db.update_todo(999, "Title", False)
+    def test_update_nonexistent_job_application(self):
+        """Test updating a job application that doesn't exist"""
+        update_command = UpdateJobApplicationCommand(
+            jobTitle="Test",
+            company="Test",
+            dateApplied="2025-08-20",
+            status="Applied"
+        )
+        success = self.db.update_job_application(999, update_command)
         assert success == False
     
-    def test_delete_existing_todo(self):
-        """Test deleting an existing todo"""
-        id1 = self.db.create_todo("Todo 1")
-        id2 = self.db.create_todo("Todo 2")
-        
-        success = self.db.delete_todo(id1)
+    def test_delete_existing_job_application(self):
+        """Test deleting an existing job application"""
+        # Delete one of the sample applications (id=1)
+        success = self.db.delete_job_application(1)
         assert success == True
         
-        todos = self.db.get_all_todos()
-        assert len(todos) == 1
-        assert todos[0].id == id2
-        assert todos[0].title == "Todo 2"
+        job_apps = self.db.get_all_job_applications()
+        assert len(job_apps) == 2  # 3 - 1 = 2
+        assert all(app.id != 1 for app in job_apps)  # ID 1 should be gone
     
-    def test_delete_nonexistent_todo(self):
-        """Test deleting a todo that doesn't exist"""
-        success = self.db.delete_todo(999)
+    def test_delete_nonexistent_job_application(self):
+        """Test deleting a job application that doesn't exist"""
+        success = self.db.delete_job_application(999)
         assert success == False
     
-    def test_get_todo_by_id(self):
-        """Test retrieving a specific todo by ID"""
-        id1 = self.db.create_todo("Todo 1")
-        id2 = self.db.create_todo("Todo 2")
+    def test_get_job_application_by_id(self):
+        """Test retrieving a specific job application by ID"""
+        # Test with sample data
+        job_app = self.db.get_job_application_by_id(1)
+        assert job_app is not None
+        assert job_app.id == 1
+        assert job_app.jobTitle == "Frontend Developer"
+        assert job_app.company == "OpenAI"
+        assert job_app.salary == "$120,000 - $150,000"
+        assert job_app.location == "San Francisco, CA"
         
-        todo = self.db.get_todo_by_id(id1)
-        assert todo is not None
-        assert todo.id == id1
-        assert todo.title == "Todo 1"
+        job_app = self.db.get_job_application_by_id(2)
+        assert job_app is not None
+        assert job_app.id == 2
+        assert job_app.jobTitle == "Backend Developer"
         
-        todo = self.db.get_todo_by_id(id2)
-        assert todo is not None
-        assert todo.id == id2
-        assert todo.title == "Todo 2"
-        
-        todo = self.db.get_todo_by_id(999)
-        assert todo is None
+        job_app = self.db.get_job_application_by_id(999)
+        assert job_app is None
     
     def test_delete_and_update_sequence(self):
-        """Test the bug scenario: create 2 todos, delete second, update first"""
-        id1 = self.db.create_todo("First Todo")
-        id2 = self.db.create_todo("Second Todo")
-        
-        # Delete the second todo
-        success = self.db.delete_todo(id2)
+        """Test the sequence: delete one job, update another"""
+        # Delete job application with id=2
+        success = self.db.delete_job_application(2)
         assert success == True
         
-        # Update the first todo (this was failing before the fix)
-        success = self.db.update_todo(id1, "Updated First Todo", True)
+        # Update job application with id=1
+        update_command = UpdateJobApplicationCommand(
+            jobTitle="Updated Frontend Developer",
+            company="Updated OpenAI",
+            dateApplied="2025-08-23",
+            status="Hired",
+            description="Updated description",
+            jobUrl="https://updated-openai.com",
+            salary="$160,000 - $190,000",
+            location="Remote"
+        )
+        success = self.db.update_job_application(1, update_command)
         assert success == True
         
         # Verify the update worked
-        todo = self.db.get_todo_by_id(id1)
-        assert todo is not None
-        assert todo.title == "Updated First Todo"
-        assert todo.isComplete == True
+        job_app = self.db.get_job_application_by_id(1)
+        assert job_app is not None
+        assert job_app.jobTitle == "Updated Frontend Developer"
+        assert job_app.status == "Hired"
+        assert job_app.salary == "$160,000 - $190,000"
+        assert job_app.location == "Remote"
         
-        # Verify only one todo remains
-        todos = self.db.get_all_todos()
-        assert len(todos) == 1
+        # Verify we have 2 job applications remaining
+        job_apps = self.db.get_all_job_applications()
+        assert len(job_apps) == 2
     
     def test_id_persistence_after_deletion(self):
         """Test that IDs continue incrementing even after deletions"""
-        id1 = self.db.create_todo("Todo 1")
-        id2 = self.db.create_todo("Todo 2")
+        command1 = CreateJobApplicationCommand(
+            jobTitle="Job 1",
+            company="Company 1",
+            dateApplied="2025-08-20",
+            status="Applied"
+        )
+        command2 = CreateJobApplicationCommand(
+            jobTitle="Job 2",
+            company="Company 2",
+            dateApplied="2025-08-21",
+            status="Applied"
+        )
         
-        # Delete all todos
-        self.db.delete_todo(id1)
-        self.db.delete_todo(id2)
+        id1 = self.db.create_job_application(command1)
+        id2 = self.db.create_job_application(command2)
         
-        # Create new todos - IDs should continue from 3
-        id3 = self.db.create_todo("Todo 3")
-        id4 = self.db.create_todo("Todo 4")
+        # Delete both new job applications
+        self.db.delete_job_application(id1)
+        self.db.delete_job_application(id2)
         
-        assert id3 == 3
-        assert id4 == 4
+        # Create new job applications - IDs should continue incrementing
+        command3 = CreateJobApplicationCommand(
+            jobTitle="Job 3",
+            company="Company 3",
+            dateApplied="2025-08-22",
+            status="Applied"
+        )
+        command4 = CreateJobApplicationCommand(
+            jobTitle="Job 4",
+            company="Company 4",
+            dateApplied="2025-08-23",
+            status="Applied"
+        )
         
-        todos = self.db.get_all_todos()
-        assert len(todos) == 2
-        assert todos[0].id == 3
-        assert todos[1].id == 4
+        id3 = self.db.create_job_application(command3)
+        id4 = self.db.create_job_application(command4)
+        
+        assert id3 == id2 + 1  # Continue incrementing
+        assert id4 == id3 + 1
+        
+        job_apps = self.db.get_all_job_applications()
+        # Should have 3 sample + 2 new = 5 total
+        assert len(job_apps) == 5
     
     def test_concurrent_operations(self):
         """Test thread safety with concurrent operations"""
@@ -151,13 +240,19 @@ class TestInMemoryDatabase:
         
         results = []
         
-        def create_todos():
+        def create_job_applications():
             for i in range(10):
-                todo_id = self.db.create_todo(f"Concurrent {i}")
-                results.append(todo_id)
+                command = CreateJobApplicationCommand(
+                    jobTitle=f"Concurrent Job {i}",
+                    company=f"Company {i}",
+                    dateApplied="2025-08-20",
+                    status="Applied"
+                )
+                job_id = self.db.create_job_application(command)
+                results.append(job_id)
         
         # Create multiple threads
-        threads = [threading.Thread(target=create_todos) for _ in range(3)]
+        threads = [threading.Thread(target=create_job_applications) for _ in range(3)]
         
         # Start all threads
         for t in threads:
@@ -167,7 +262,7 @@ class TestInMemoryDatabase:
         for t in threads:
             t.join()
         
-        # Check that we have 30 todos with unique IDs
-        todos = self.db.get_all_todos()
-        assert len(todos) == 30
-        assert len(set(results)) == 30  # All IDs should be unique
+        # Check that we have 30 new job applications + 3 sample = 33 total with unique IDs
+        job_apps = self.db.get_all_job_applications()
+        assert len(job_apps) == 33
+        assert len(set(results)) == 30  # All new IDs should be unique
