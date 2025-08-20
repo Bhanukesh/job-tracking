@@ -17,9 +17,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, Loader2 } from "lucide-react"
+import { Plus, Loader2, Check } from "lucide-react"
 import { jobApplicationSchema, transformToCreateCommand, type JobApplicationFormData } from "@/lib/validations/jobApplication"
 import { useCreateJobApplicationMutation } from "@/store/api/generated/jobApplications"
+import { getCurrentDateString } from "@/lib/utils/date"
+import { toast } from "sonner"
 
 interface AddJobModalProps {
   trigger?: React.ReactNode;
@@ -46,7 +48,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
       status: "Applied",
       description: "",
       jobUrl: "",
-      dateApplied: new Date().toISOString().split('T')[0], // Today's date
+      dateApplied: getCurrentDateString(), // Use timezone-safe current date
     },
   })
 
@@ -54,10 +56,22 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
     try {
       const createCommand = transformToCreateCommand(data)
       await createJobApplication({ createJobApplicationCommand: createCommand }).unwrap()
+      
+      // Show success toast with check icon
+      toast.success("Job application added successfully!", {
+        icon: <Check className="h-4 w-4" />,
+        description: `${data.jobTitle} at ${data.company}`,
+      })
+      
       setOpen(false)
       reset()
     } catch (error) {
       console.error('Failed to create job application:', error)
+      
+      // Show error toast
+      toast.error("Failed to add job application", {
+        description: "Please try again later.",
+      })
     }
   }
 
@@ -94,7 +108,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                   id="jobTitle"
                   {...register("jobTitle")}
                   placeholder="e.g. Senior Frontend Developer"
-                  className="text-sm"
+                  className={`text-sm ${errors.jobTitle ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
                 {errors.jobTitle && (
                   <p className="text-sm text-red-500">{errors.jobTitle.message}</p>
@@ -106,7 +120,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                   id="company"
                   {...register("company")}
                   placeholder="e.g. Google"
-                  className="text-sm"
+                  className={`text-sm ${errors.company ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
                 {errors.company && (
                   <p className="text-sm text-red-500">{errors.company.message}</p>
@@ -121,7 +135,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                   id="location"
                   {...register("location")}
                   placeholder="e.g. San Francisco, CA"
-                  className="text-sm"
+                  className={`text-sm ${errors.location ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
                 {errors.location && (
                   <p className="text-sm text-red-500">{errors.location.message}</p>
@@ -132,12 +146,15 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                 <Input
                   id="salary"
                   {...register("salary")}
-                  placeholder="e.g. $120,000 - $150,000"
-                  className="text-sm"
+                  placeholder="e.g. $120,000 - $150,000 or 50K"
+                  className={`text-sm ${errors.salary ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
                 {errors.salary && (
                   <p className="text-sm text-red-500">{errors.salary.message}</p>
                 )}
+                <p className="text-xs text-muted-foreground">
+                  Examples: $120,000, 50K, $50k-$60k, 120000-150000
+                </p>
               </div>
             </div>
 
@@ -149,7 +166,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="text-sm">
+                      <SelectTrigger className={`text-sm ${errors.status ? 'border-red-500 focus:border-red-500' : ''}`}>
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -171,7 +188,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                   id="dateApplied"
                   type="date"
                   {...register("dateApplied")}
-                  className="text-sm"
+                  className={`text-sm ${errors.dateApplied ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
                 {errors.dateApplied && (
                   <p className="text-sm text-red-500">{errors.dateApplied.message}</p>
@@ -186,7 +203,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                 type="url"
                 {...register("jobUrl")}
                 placeholder="https://company.com/jobs/..."
-                className="text-sm"
+                className={`text-sm ${errors.jobUrl ? 'border-red-500 focus:border-red-500' : ''}`}
               />
               {errors.jobUrl && (
                 <p className="text-sm text-red-500">{errors.jobUrl.message}</p>
@@ -199,11 +216,14 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
                 id="description"
                 {...register("description")}
                 placeholder="Paste the job description here..."
-                className="min-h-[100px] sm:min-h-[120px] resize-none text-sm"
+                className={`min-h-[100px] sm:min-h-[120px] resize-none text-sm ${errors.description ? 'border-red-500 focus:border-red-500' : ''}`}
               />
               {errors.description && (
                 <p className="text-sm text-red-500">{errors.description.message}</p>
               )}
+              <p className="text-xs text-muted-foreground">
+                Maximum 2000 characters
+              </p>
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">

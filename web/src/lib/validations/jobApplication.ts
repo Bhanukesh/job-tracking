@@ -17,18 +17,35 @@ export const jobApplicationSchema = z.object({
     .string()
     .max(100, "Location must not exceed 100 characters")
     .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      // Basic location validation - allow letters, numbers, spaces, commas, periods, hyphens
+      const locationPattern = /^[a-zA-Z0-9\s,.\-()]+$/;
+      return locationPattern.test(val);
+    }, "Location contains invalid characters"),
   
   salary: z
     .string()
     .max(50, "Salary range must not exceed 50 characters")
     .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      // Allow patterns like: 50000, $50000, $50,000, 50K, $50K, $50k-$60k, 50000-60000, etc.
+      const salaryPattern = /^[\$]?[\d,]+(?:[kK])?(?:\s*[-–—]\s*[\$]?[\d,]+(?:[kK])?)?(?:\s*(?:per|\/)\s*(?:year|yr|month|mo|hour|hr))?$/;
+      return salaryPattern.test(val.trim());
+    }, "Please enter a valid salary (e.g., $50,000, 50K, $50k-$60k)")
+    .refine((val) => {
+      if (!val || val === "") return true;
+      // Ensure no invalid characters
+      const cleanVal = val.replace(/[\$,\s\-–—kK]/g, '');
+      return /^\d+(?:\d+)?$/.test(cleanVal);
+    }, "Salary must contain only numbers, currency symbols, and valid separators"),
   
   status: z
     .enum(["Applied", "Interview", "Offer", "Rejected"], {
-      required_error: "Status is required",
-      invalid_type_error: "Please select a valid status",
+      message: "Please select a valid status",
     }),
   
   description: z
@@ -39,9 +56,23 @@ export const jobApplicationSchema = z.object({
   
   jobUrl: z
     .string()
-    .url("Please enter a valid URL")
     .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      // Enhanced URL validation
+      const urlPattern = /^https?:\/\/(?:[-\w.])+(?:\:[0-9]+)?(?:\/(?:[\w\/_.])*(?:\?(?:[\w&=%\-.])*)?(?:\#(?:[\w\-.])*)?)?$/;
+      return urlPattern.test(val);
+    }, "Please enter a valid URL (e.g., https://company.com/jobs/position)")
+    .refine((val) => {
+      if (!val || val === "") return true;
+      try {
+        const url = new URL(val);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }, "URL must be a valid web address with http:// or https://"),
   
   dateApplied: z
     .string()
@@ -49,7 +80,18 @@ export const jobApplicationSchema = z.object({
     .refine((val) => {
       const date = new Date(val);
       return !isNaN(date.getTime());
-    }, "Please enter a valid date"),
+    }, "Please enter a valid date")
+    .refine((val) => {
+      const date = new Date(val);
+      const today = new Date();
+      return date <= today;
+    }, "Date applied cannot be in the future")
+    .refine((val) => {
+      const date = new Date(val);
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 5); // Allow up to 5 years ago
+      return date >= oneYearAgo;
+    }, "Date applied cannot be more than 5 years ago"),
 });
 
 export type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;

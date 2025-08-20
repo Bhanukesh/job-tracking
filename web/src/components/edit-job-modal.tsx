@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/dialog"
 import { Edit, Loader2 } from "lucide-react"
 import { useUpdateJobApplicationMutation, type JobApplication } from "@/store/api/generated/jobApplications"
+import { jobApplicationSchema, type JobApplicationFormData } from "@/lib/validations/jobApplication"
+import { z } from "zod"
+import { formatDateForInput } from "@/lib/utils/date"
 
 interface EditJobModalProps {
   job?: JobApplication;
@@ -26,6 +29,7 @@ interface EditJobModalProps {
 export function EditJobModal({ job, trigger }: EditJobModalProps) {
   const [open, setOpen] = useState(false)
   const [updateJobApplication, { isLoading }] = useUpdateJobApplicationMutation()
+  const [errors, setErrors] = useState<Record<string, string>>({})
   
   const [formData, setFormData] = useState({
     jobTitle: job?.jobTitle || '',
@@ -35,7 +39,7 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
     status: job?.status || 'Applied',
     description: job?.description || '',
     jobUrl: job?.jobUrl || '',
-    dateApplied: job?.dateApplied || new Date().toISOString().split('T')[0]
+    dateApplied: formatDateForInput(job?.dateApplied || new Date())
   })
 
   // Update form data when job prop changes
@@ -51,8 +55,17 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
         jobUrl: job.jobUrl || '',
         dateApplied: job.dateApplied || new Date().toISOString().split('T')[0]
       })
+      // Clear errors when job changes
+      setErrors({})
     }
   }, [job])
+
+  // Clear errors when modal opens/closes
+  useEffect(() => {
+    if (!open) {
+      setErrors({})
+    }
+  }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,28 +74,50 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
       return
     }
     
+    // Clear previous errors
+    setErrors({})
+    
     try {
+      // Validate form data
+      const validatedData = jobApplicationSchema.parse(formData)
+      
       await updateJobApplication({
         id: job.id,
         updateJobApplicationCommand: {
-          jobTitle: formData.jobTitle,
-          company: formData.company,
-          dateApplied: formData.dateApplied,
-          status: formData.status,
-          description: formData.description || null,
-          jobUrl: formData.jobUrl || null,
-          salary: formData.salary || null,
-          location: formData.location || null,
+          jobTitle: validatedData.jobTitle,
+          company: validatedData.company,
+          dateApplied: validatedData.dateApplied,
+          status: validatedData.status,
+          description: validatedData.description || null,
+          jobUrl: validatedData.jobUrl || null,
+          salary: validatedData.salary || null,
+          location: validatedData.location || null,
         }
       }).unwrap()
       setOpen(false)
     } catch (error) {
-      console.error('Failed to update job application:', error)
+      if (error instanceof z.ZodError) {
+        // Handle validation errors
+        const fieldErrors: Record<string, string> = {}
+        error.issues.forEach((issue) => {
+          if (issue.path.length > 0) {
+            fieldErrors[issue.path[0] as string] = issue.message
+          }
+        })
+        setErrors(fieldErrors)
+      } else {
+        console.error('Failed to update job application:', error)
+      }
     }
   }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    
+    // Clear the error for this field when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
   }
 
   return (
@@ -112,8 +147,11 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                   onChange={(e) => handleInputChange("jobTitle", e.target.value)}
                   placeholder="e.g. Senior Frontend Developer"
                   required
-                  className="text-sm"
+                  className={`text-sm ${errors.jobTitle ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
+                {errors.jobTitle && (
+                  <p className="text-sm text-red-500 mt-1">{errors.jobTitle}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company" className="text-sm font-medium">Company *</Label>
@@ -123,8 +161,11 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                   onChange={(e) => handleInputChange("company", e.target.value)}
                   placeholder="e.g. Google"
                   required
-                  className="text-sm"
+                  className={`text-sm ${errors.company ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
+                {errors.company && (
+                  <p className="text-sm text-red-500 mt-1">{errors.company}</p>
+                )}
               </div>
             </div>
 
@@ -136,8 +177,11 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                   value={formData.location}
                   onChange={(e) => handleInputChange("location", e.target.value)}
                   placeholder="e.g. San Francisco, CA"
-                  className="text-sm"
+                  className={`text-sm ${errors.location ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
+                {errors.location && (
+                  <p className="text-sm text-red-500 mt-1">{errors.location}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="salary" className="text-sm font-medium">Salary Range</Label>
@@ -145,9 +189,15 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                   id="salary"
                   value={formData.salary}
                   onChange={(e) => handleInputChange("salary", e.target.value)}
-                  placeholder="e.g. $120,000 - $150,000"
-                  className="text-sm"
+                  placeholder="e.g. $120,000 - $150,000 or 50K"
+                  className={`text-sm ${errors.salary ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
+                {errors.salary && (
+                  <p className="text-sm text-red-500 mt-1">{errors.salary}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Examples: $120,000, 50K, $50k-$60k, 120000-150000
+                </p>
               </div>
             </div>
 
@@ -155,7 +205,7 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
               <div className="space-y-2">
                 <Label htmlFor="status" className="text-sm font-medium">Status</Label>
                 <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                  <SelectTrigger className="text-sm">
+                  <SelectTrigger className={`text-sm ${errors.status ? 'border-red-500 focus:border-red-500' : ''}`}>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -165,6 +215,9 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                     <SelectItem value="Rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.status && (
+                  <p className="text-sm text-red-500 mt-1">{errors.status}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="dateApplied" className="text-sm font-medium">Date Applied *</Label>
@@ -174,8 +227,11 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                   value={formData.dateApplied}
                   onChange={(e) => handleInputChange("dateApplied", e.target.value)}
                   required
-                  className="text-sm"
+                  className={`text-sm ${errors.dateApplied ? 'border-red-500 focus:border-red-500' : ''}`}
                 />
+                {errors.dateApplied && (
+                  <p className="text-sm text-red-500 mt-1">{errors.dateApplied}</p>
+                )}
               </div>
             </div>
 
@@ -187,8 +243,11 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                 value={formData.jobUrl}
                 onChange={(e) => handleInputChange("jobUrl", e.target.value)}
                 placeholder="https://company.com/jobs/..."
-                className="text-sm"
+                className={`text-sm ${errors.jobUrl ? 'border-red-500 focus:border-red-500' : ''}`}
               />
+              {errors.jobUrl && (
+                <p className="text-sm text-red-500 mt-1">{errors.jobUrl}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -198,8 +257,14 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
                 value={formData.description}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange("description", e.target.value)}
                 placeholder="Paste the job description here..."
-                className="min-h-[100px] sm:min-h-[120px] resize-none text-sm"
+                className={`min-h-[100px] sm:min-h-[120px] resize-none text-sm ${errors.description ? 'border-red-500 focus:border-red-500' : ''}`}
               />
+              {errors.description && (
+                <p className="text-sm text-red-500 mt-1">{errors.description}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Maximum 2000 characters ({formData.description.length}/2000)
+              </p>
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:space-x-2">
@@ -209,7 +274,7 @@ export function EditJobModal({ job, trigger }: EditJobModalProps) {
             <Button 
               type="submit" 
               disabled={isLoading || !job?.id}
-              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm"
+              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm text-white"
             >
               {isLoading ? (
                 <>
