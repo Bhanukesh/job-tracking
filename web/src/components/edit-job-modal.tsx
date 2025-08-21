@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Edit, Loader2 } from "lucide-react"
-import { useUpdateJobApplicationMutation, type JobApplication } from "@/store/api/generated/jobApplications"
+import { useUpdateJobApplicationMutation, type JobApplication } from "@/store/api/enhanced/jobApplications"
 import { jobApplicationSchema, type JobApplicationFormData } from "@/lib/validations/jobApplication"
 import { z } from "zod"
 import { formatDateForInput } from "@/lib/utils/date"

@@ -1,5 +1,5 @@
 {
-  "next_id": 41,
+  "next_id": 43,
   "job_applications": [
     {
       "id": 1,
@@ -26,7 +26,7 @@
     {
       "id": 3,
       "jobTitle": "Cloud Solutions Architect",
-      "company": "Amazon",
+      "company": "netflix",
       "dateApplied": "2025-08-17",
       "status": "Applied",
       "description": "AWS cloud architecture and design",
@@ -37,7 +37,7 @@
     {
       "id": 4,
       "jobTitle": "Machine Learning Engineer",
-      "company": "Apple",
+      "company": "google",
       "dateApplied": "2025-08-18",
       "status": "Rejected",
       "description": "AI/ML model development",
@@ -48,7 +48,7 @@
     {
       "id": 5,
       "jobTitle": "Data Scientist",
-      "company": "Microsoft",
+      "company": "google",
       "dateApplied": "2025-08-19",
       "status": "Interview",
       "description": "Analytics and data modeling",
@@ -59,7 +59,7 @@
     {
       "id": 6,
       "jobTitle": "DevOps Engineer",
-      "company": "Netflix",
+      "company": "google",
       "dateApplied": "2025-08-20",
       "status": "Applied",
       "description": "Infrastructure and deployment automation",
@@ -440,6 +440,28 @@
       "jobUrl": "https://www.mongodb.com/careers",
       "salary": "185000",
       "location": "New York, NY"
+    },
+    {
+      "id": 41,
+      "jobTitle": "Cloud Solutions Architect",
+      "company": "google",
+      "dateApplied": "2025-01-12",
+      "status": "Applied",
+      "description": null,
+      "jobUrl": null,
+      "salary": "145000",
+      "location": "Seattle, WA"
+    },
+    {
+      "id": 42,
+      "jobTitle": "Machine Learning Engineer",
+      "company": "netflix",
+      "dateApplied": "2025-08-19",
+      "status": "Offer",
+      "description": null,
+      "jobUrl": null,
+      "salary": null,
+      "location": "Los Gatos, CA"
     }
   ]
 }

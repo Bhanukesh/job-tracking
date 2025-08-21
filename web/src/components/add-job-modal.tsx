@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Loader2, Check } from "lucide-react"
 import { jobApplicationSchema, transformToCreateCommand, type JobApplicationFormData } from "@/lib/validations/jobApplication"
-import { useCreateJobApplicationMutation } from "@/store/api/generated/jobApplications"
+import { useCreateJobApplicationMutation } from "@/store/api/enhanced/jobApplications"
 import { getCurrentDateString } from "@/lib/utils/date"
 import { toast } from "sonner"
 import { CompanyLogo } from "@/components/company-logo"
