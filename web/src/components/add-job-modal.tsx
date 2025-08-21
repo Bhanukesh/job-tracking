@@ -22,6 +22,7 @@ import { jobApplicationSchema, transformToCreateCommand, type JobApplicationForm
 import { useCreateJobApplicationMutation } from "@/store/api/generated/jobApplications"
 import { getCurrentDateString } from "@/lib/utils/date"
 import { toast } from "sonner"
+import { CompanyLogo } from "@/components/company-logo"
 
 interface AddJobModalProps {
   trigger?: React.ReactNode;
@@ -37,7 +38,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
     control,
     formState: { errors },
     reset,
-    setValue,
+    watch,
   } = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
     defaultValues: {
@@ -51,6 +52,8 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
       dateApplied: "", // No default date
     },
   })
+
+  const watchedCompany = watch("company")
 
   const onSubmit = async (data: JobApplicationFormData) => {
     try {
@@ -116,12 +119,19 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company" className="text-sm font-medium">Company *</Label>
-                <Input
-                  id="company"
-                  {...register("company")}
-                  placeholder="e.g. Google"
-                  className={`text-sm ${errors.company ? 'border-red-500 focus:border-red-500' : ''}`}
-                />
+                <div className="relative">
+                  <Input
+                    id="company"
+                    {...register("company")}
+                    placeholder="e.g. Google"
+                    className={`text-sm ${errors.company ? 'border-red-500 focus:border-red-500' : ''} ${watchedCompany ? 'pl-10' : ''}`}
+                  />
+                  {watchedCompany && (
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                      <CompanyLogo company={watchedCompany} />
+                    </div>
+                  )}
+                </div>
                 {errors.company && (
                   <p className="text-sm text-red-500">{errors.company.message}</p>
                 )}

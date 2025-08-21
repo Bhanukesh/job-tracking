@@ -14,6 +14,7 @@ import { EditJobModal } from "@/components/edit-job-modal"
 import { AddJobModal } from "@/components/add-job-modal"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { useGetJobApplicationsQuery, useDeleteJobApplicationMutation } from "@/store/api/generated/jobApplications"
+import { CompanyLogo } from "@/components/company-logo"
 
 export default function ApplicationsPage() {
     const router = useRouter()
@@ -248,9 +249,12 @@ export default function ApplicationsPage() {
                                     <Card key={app.id} className="p-4 border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => router.push(`/applications/${app.id}`)}>
                                         <div className="space-y-3">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-medium text-foreground truncate">{app.jobTitle}</h3>
-                                                    <p className="text-sm text-muted-foreground truncate">{app.company}</p>
+                                                <div className="flex items-center flex-1 min-w-0 space-x-3">
+                                                    <CompanyLogo company={app.company} />
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-medium text-foreground truncate">{app.jobTitle}</h3>
+                                                        <p className="text-sm text-muted-foreground truncate">{app.company}</p>
+                                                    </div>
                                                 </div>
                                                 <Badge 
                                                     variant="secondary"
@@ -355,7 +359,12 @@ export default function ApplicationsPage() {
                                                     {app.jobTitle}
                                                 </Link>
                                             </TableCell>
-                                            <TableCell className="px-6 py-4">{app.company}</TableCell>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <CompanyLogo company={app.company} />
+                                                    <span>{app.company}</span>
+                                                </div>
+                                            </TableCell>
                                             <TableCell className="px-6 py-4">{app.location || 'Not specified'}</TableCell>
                                             <TableCell className="px-6 py-4">{app.salary || 'Not specified'}</TableCell>
                                             <TableCell className="px-6 py-4">
