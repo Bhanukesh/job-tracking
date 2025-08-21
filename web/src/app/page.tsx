@@ -11,6 +11,7 @@ import { useGetJobApplicationsQuery, useDeleteJobApplicationMutation } from "@/s
 import { toast } from "sonner"
 import { useMemo, useState } from "react"
 import { safeSortArray } from "@/lib/utils"
+import { CompanyLogo } from "@/components/company-logo"
 
 export default function DashboardPage() {
     const router = useRouter()
@@ -230,9 +231,12 @@ export default function DashboardPage() {
                                     <Card key={app.id} className="p-4 border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => router.push(`/applications/${app.id}?from=dashboard`)}>
                                         <div className="space-y-3">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-medium text-foreground truncate">{app.jobTitle}</h3>
-                                                    <p className="text-sm text-muted-foreground truncate">{app.company}</p>
+                                                <div className="flex items-center flex-1 min-w-0 space-x-3">
+                                                    <CompanyLogo company={app.company} />
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-medium text-foreground truncate">{app.jobTitle}</h3>
+                                                        <p className="text-sm text-muted-foreground truncate">{app.company}</p>
+                                                    </div>
                                                 </div>
                                                 <Badge 
                                                     variant="secondary"
@@ -299,7 +303,12 @@ export default function DashboardPage() {
                                     recentApplications.map((app) => (
                                         <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/applications/${app.id}?from=dashboard`)}>
                                             <TableCell className="px-6 py-4 font-medium">{app.jobTitle}</TableCell>
-                                            <TableCell className="px-6 py-4">{app.company}</TableCell>
+                                            <TableCell className="px-6 py-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <CompanyLogo company={app.company} />
+                                                    <span>{app.company}</span>
+                                                </div>
+                                            </TableCell>
                                             <TableCell className="px-6 py-4">{app.location || 'Location not specified'}</TableCell>
                                             <TableCell className="px-6 py-4">
                                                 <Badge 

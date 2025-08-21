@@ -10,6 +10,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { EditJobModal } from "@/components/edit-job-modal"
 import { useGetJobApplicationsQuery } from "@/store/api/enhanced/jobApplications"
 import { useMemo, useEffect, useState } from "react"
+import { CompanyLogo } from "@/components/company-logo"
 
 export default function JobDetailPage() {
     const params = useParams()
@@ -112,7 +113,10 @@ export default function JobDetailPage() {
                         <CardHeader>
                             <div className="min-w-0">
                         <h1 className="text-xl sm:text-2xl font-bold text-foreground break-words">{jobDetails.jobTitle}</h1>
-                        <p className="text-base sm:text-lg text-muted-foreground truncate">{jobDetails.company}</p>
+                        <div className="flex items-center space-x-2 mt-1">
+                            <CompanyLogo company={jobDetails.company} size={24} />
+                            <p className="text-base sm:text-lg text-muted-foreground">{jobDetails.company}</p>
+                        </div>
                         <Badge 
                         variant="secondary"
                         className={`${getStatusBadgeColor(jobDetails.status)} text-sm px-3 py-1 my-2 self-start sm:self-auto`}
@@ -146,7 +150,10 @@ export default function JobDetailPage() {
                                 <Building className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-muted-foreground">Company</p>
-                                    <p className="text-foreground break-words">{jobDetails.company}</p>
+                                    <div className="flex items-center space-x-2">
+                                        <CompanyLogo company={jobDetails.company} />
+                                        <p className="text-foreground break-words">{jobDetails.company}</p>
+                                    </div>
                                 </div>
                             </div>
                             
