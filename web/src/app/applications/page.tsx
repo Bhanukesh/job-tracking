@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation"
 import { EditJobModal } from "@/components/edit-job-modal"
 import { AddJobModal } from "@/components/add-job-modal"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
-import { useGetJobApplicationsQuery, useDeleteJobApplicationMutation } from "@/store/api/generated/jobApplications"
+import { useGetJobApplicationsQuery, useDeleteJobApplicationMutation } from "@/store/api/enhanced/jobApplications"
 import { CompanyLogo } from "@/components/company-logo"
 
 export default function ApplicationsPage() {
