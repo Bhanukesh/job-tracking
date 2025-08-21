@@ -6,14 +6,20 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Edit, ExternalLink, MapPin, DollarSign, Calendar, Building } from "lucide-react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { EditJobModal } from "@/components/edit-job-modal"
 import { useGetJobApplicationsQuery } from "@/store/api/enhanced/jobApplications"
-import { useMemo } from "react"
+import { useMemo, useEffect, useState } from "react"
 
 export default function JobDetailPage() {
     const params = useParams()
+    const router = useRouter()
+    const searchParams = useSearchParams()
     const jobId = params.id as string
+    
+    // Determine back URL based on search parameter
+    const fromParam = searchParams.get('from')
+    const backUrl = fromParam === 'dashboard' ? '/' : '/applications'
 
     // Fetch applications and find the specific job
     const { data: applications = [], isLoading, error } = useGetJobApplicationsQuery()
@@ -45,10 +51,10 @@ export default function JobDetailPage() {
                     <div className="text-center">
                         <h1 className="text-2xl font-bold text-foreground">Job Not Found</h1>
                         <p className="mt-2 text-muted-foreground">The job application you're looking for doesn't exist.</p>
-                        <Link href="/applications" className="mt-4 inline-block">
+                        <Link href={backUrl} className="mt-4 inline-block">
                             <Button variant="outline">
                                 <ArrowLeft className="h-4 w-4 mr-2" />
-                                Back to Applications
+                                {backUrl === '/' ? 'Back to Dashboard' : 'Back to Applications'}
                             </Button>
                         </Link>
                     </div>
@@ -77,10 +83,10 @@ export default function JobDetailPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                 <div className="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
-                    <Link href="/applications">
+                    <Link href={backUrl}>
                         <Button variant="ghost" size="sm" className="flex items-center self-start">
                             <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Applications
+                            {backUrl === '/' ? 'Back to Dashboard' : 'Back to Applications'}
                         </Button>
                     </Link>
                     
