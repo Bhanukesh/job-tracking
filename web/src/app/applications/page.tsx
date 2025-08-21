@@ -54,17 +54,25 @@ export default function ApplicationsPage() {
                 const matchesStatus = statusFilter === "all" || 
                     app.status.toLowerCase() === statusFilter.toLowerCase()
                 
-                // Date filter - handle different date formats
+                // Date filter - normalize and compare dates
                 const matchesDate = dateFilter === "" || (() => {
                     try {
-                        // Handle both date string formats
+                        // Normalize the application date to YYYY-MM-DD format
                         const appDate = new Date(app.dateApplied);
-                        const filterDate = new Date(dateFilter);
+                        if (isNaN(appDate.getTime())) {
+                            // Try fallback string comparison
+                            return app.dateApplied.startsWith(dateFilter) || 
+                                   app.dateApplied.includes(dateFilter);
+                        }
                         
-                        // Compare dates without time component
-                        return appDate.getFullYear() === filterDate.getFullYear() &&
-                               appDate.getMonth() === filterDate.getMonth() &&
-                               appDate.getDate() === filterDate.getDate();
+                        // Format application date to YYYY-MM-DD for comparison
+                        const year = appDate.getFullYear();
+                        const month = String(appDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(appDate.getDate()).padStart(2, '0');
+                        const normalizedAppDate = `${year}-${month}-${day}`;
+                        
+                        // Compare normalized dates
+                        return normalizedAppDate === dateFilter;
                     } catch (error) {
                         // Fallback: try string comparison
                         return app.dateApplied.startsWith(dateFilter) || 

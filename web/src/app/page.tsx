@@ -4,16 +4,18 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Users, MessageSquare, XCircle, Handshake, Loader2, X } from "lucide-react"
+import { FileText, Users, MessageSquare, XCircle, Handshake, Loader2, X, Edit, Trash2, Filter } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { AddJobModal } from "@/components/add-job-modal"
-import { useGetJobApplicationsQuery } from "@/store/api/generated/jobApplications"
+import { useGetJobApplicationsQuery, useDeleteJobApplicationMutation } from "@/store/api/generated/jobApplications"
+import { toast } from "sonner"
 import { useMemo, useState } from "react"
 import { safeSortArray } from "@/lib/utils"
 
 export default function DashboardPage() {
     const router = useRouter()
     const { data: applications = [], isLoading, error } = useGetJobApplicationsQuery()
+    const [deleteJobApplication, { isLoading: isDeleting }] = useDeleteJobApplicationMutation()
     const [statusFilter, setStatusFilter] = useState<string | null>(null)
     
     // Calculate stats from real data
@@ -72,7 +74,7 @@ export default function DashboardPage() {
         
         return safeSortArray(filteredApps, (a, b) => 
             new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime()
-        ).slice(0, 5)
+        ).slice(0, 10)
     }, [applications, statusFilter])
 
     const handleStatusFilter = (status: string | null) => {
@@ -82,6 +84,20 @@ export default function DashboardPage() {
 
     const clearFilter = () => {
         setStatusFilter(null)
+    }
+
+    // Handle delete functionality
+    const handleDelete = async (id: number) => {
+        if (confirm('Are you sure you want to delete this application?')) {
+            try {
+                await deleteJobApplication({ id }).unwrap()
+                toast.success('Job application deleted successfully!')
+            } catch (error: any) {
+                console.error('Failed to delete application:', error)
+                const errorMessage = error?.data?.message || error?.message || 'Failed to delete job application. Please try again.'
+                toast.error(errorMessage)
+            }
+        }
     }
 
     const getStatusBadgeColor = (status: string) => {
@@ -211,7 +227,7 @@ export default function DashboardPage() {
                                 ))
                             ) : (
                                 recentApplications.map((app) => (
-                                    <Card key={app.id} className="p-4 border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => router.push(`/applications/${app.id}`)}>
+                                    <Card key={app.id} className="p-4 border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => router.push(`/applications/${app.id}?from=dashboard`)}>
                                         <div className="space-y-3">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1 min-w-0">
@@ -281,7 +297,7 @@ export default function DashboardPage() {
                                     ))
                                 ) : (
                                     recentApplications.map((app) => (
-                                        <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/applications/${app.id}`)}>
+                                        <TableRow key={app.id} className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => router.push(`/applications/${app.id}?from=dashboard`)}>
                                             <TableCell className="px-6 py-4 font-medium">{app.jobTitle}</TableCell>
                                             <TableCell className="px-6 py-4">{app.company}</TableCell>
                                             <TableCell className="px-6 py-4">{app.location || 'Location not specified'}</TableCell>

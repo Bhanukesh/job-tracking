@@ -48,7 +48,7 @@ export function AddJobModal({ trigger }: AddJobModalProps) {
       status: "Applied",
       description: "",
       jobUrl: "",
-      dateApplied: getCurrentDateString(), // Use timezone-safe current date
+      dateApplied: "", // No default date
     },
   })
 
